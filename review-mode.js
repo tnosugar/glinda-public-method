@@ -1,21 +1,20 @@
 // public/method/review-mode.js
 //
-// Composed 2026-05-10 from library/features/review-widget/.
-// See .composition-manifest.md alongside this file for full provenance.
+// Re-emitted 2026-05-12 (prota-alignment pass) from library/features/review-widget/.
+// Glinda brand colors preserved; class names + DOM structure aligned with prota's
+// deployed reference (prota-studio/public/website/review-mode.js). New "applied"
+// state in the comment lifecycle, three-tab filter (active / applied / archived),
+// pill rendered as `+` glyph instead of "Add comment" text, sidebar reserves
+// right gutter, single center-bottom toast.
 //
-// ES module. Loaded dynamically by review-bootstrap.js after ?review=1
-// is detected and review-mode.css is in the DOM. Exports an init()
-// function the bootstrap calls with { basePath, config, configGlobalName }.
+// Variation recorded at .claude/variations/review-widget.md.
+// Composition manifest update at public/method/.composition-manifest.md.
 //
-// Composition order per library/features/review-widget/intl-plural-labels.md
-// §"TDZ-safe init order":
-//   1. cfg lookup
-//   2. LABELS construction (DEFAULT_LABELS overlaid with cfg.REVIEW_LABELS)
-//   3. formatCount definition
-//   4. conditional init() call
-// LABELS must exist before any code that reads it. All user-facing string
-// literals use SINGLE quotes per library/features/review-widget/intl-plural-labels.md
-// §"Single-quoted empty-state strings".
+// ES module. Loaded dynamically by review-bootstrap.js after ?review=1.
+// TDZ-safe init order: cfg lookup → LABELS construction → formatCount →
+// conditional init(). LABELS must exist before any code that reads it.
+// All user-facing string literals use SINGLE quotes (per the
+// intl-plural-labels §"Single-quoted empty-state strings" rule).
 //
 // Source-of-truth: do NOT hand-edit. Re-compose via the library.
 
@@ -25,90 +24,86 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
 
 // ============================================================
-// DEFAULT_LABELS — canonical English defaults from the library.
-// Project overrides at compose-time AND runtime via cfg.REVIEW_LABELS.
+// DEFAULT_LABELS — overlays cfg.REVIEW_LABELS at runtime.
 // ============================================================
 
 const DEFAULT_LABELS = {
   locale: 'en',
 
   bannerText: 'Review mode',
-  bannerHint: 'Hover any paragraph to leave a comment.',
-  bannerClose: 'Close',
+  bannerExit: 'Exit',
 
   sidebarTitle: 'Comments',
-  sidebarEmpty: 'No comments yet. Click any paragraph to start.',
-  noAnchorFallback: 'Comment on a removed element',
+  sidebarEmpty: 'No comments yet. Hover any paragraph to add one.',
   filterActive: 'Active',
+  filterApplied: 'Applied',
   filterArchived: 'Archived',
 
-  toggleButton: 'Comments',
-  toggleButtonTitle: 'Show comments',
+  toggleSidebar: 'Comments',
 
-  addCommentTitle: 'Add comment',
-  statusPending: 'Pending',
-  statusDone: 'Done',
+  statusPending: 'pending',
+  statusApplied: 'applied',
 
   commentsCount: { one: '{n} comment', other: '{n} comments' },
 
   modalTitleNew: 'Add comment',
   modalTitleEdit: 'Edit comment',
   modalCommentLabel: 'Your comment',
+  modalCommentOpt: '(optional if you provide a replacement)',
   modalCommentPlaceholder: "What's the problem?",
-  modalCommentHint: 'Optional if you provide a suggested replacement.',
   modalReplacementLabel: 'Suggested replacement',
+  modalReplacementOpt: '(optional if you provide a comment)',
   modalReplacementPlaceholder: 'Optional rewrite',
-  modalReplacementHint: 'Optional if you provide commentary.',
   modalRequiredError: 'Comment or suggested replacement is required.',
   modalSubmitNew: 'Add comment',
   modalSubmitEdit: 'Save changes',
   modalCancel: 'Cancel',
-  modalClose: 'Close',
 
+  applyLabel: 'Apply',
   editLabel: 'Edit',
-  editTitle: 'Edit this comment',
   archiveLabel: 'Archive',
-  archiveTitle: 'Archive this comment',
   restoreLabel: 'Restore',
-  restoreTitle: 'Restore to active',
   deleteLabel: 'Delete',
-  deleteTitle: 'Delete permanently',
+  archiveGroupLabel: 'Mark group as done',
   confirmDelete: 'Delete this comment? This cannot be undone.',
 
-  archiveAllLabel: 'Archive all',
-  archiveAllTitle: 'Archive all comments in this group',
-
   saved: 'Saved',
+  applied: 'Applied',
+  archived: 'Archived',
+  restored: 'Restored to active',
   deleted: 'Deleted',
-  restoredToActive: 'Restored to active',
   errorPrefix: 'Error: ',
   elementGone: 'The element this comment points to is no longer on the page.',
+  noBackend: 'No backend connection.',
+  firebasePlaceholder: 'Firebase config is placeholder. Writes will fail.',
 
-  footerSignature: ''
+  groupCount: { one: '{n} comment', other: '{n} comments' }
 };
 
 // ============================================================
 // State — module-level, declared BEFORE init() so the TDZ doesn't bite.
+// Comment status enum: 'pending' (default) | 'applied' | 'archived'.
+// Legacy records carry boolean `archived`; migrated on read.
 // ============================================================
 
 const state = {
   cfg: null,
   LABELS: null,
   pageSlug: '',
-  comments: {},          // pushId -> record
-  filter: 'active',      // 'active' | 'archived'
-  sidebarOpen: true,
+  comments: {},
+  filter: 'active',
+  sidebarOpen: false,
   modal: { open: false, mode: null, editingId: null, targetAnchorId: null },
   spotlightTimer: null,
   spotlightAnchorId: null,
+  toastTimer: null,
   db: null,
   unsubscribe: null,
-  loadedAt: 0,
-  toastQueue: []
+  loadedAt: 0
 };
 
 // ============================================================
-// Anchor strategy (features.review-widget.anchor-strategy)
+// Anchor strategy
 // ============================================================
 
 const ANCHOR_TAGS = [
@@ -127,13 +122,11 @@ function derivePageSlug() {
 }
 
 function selectContentArea() {
-  // Default scope: <main> if present, else <section> siblings under <body>,
-  // else <body>. Chrome (<nav>, <header>, <footer>) excluded by post-filter.
   return document.querySelector('main') || document.body;
 }
 
 function isInChrome(el) {
-  return !!el.closest('nav, header[role="banner"], footer, .review-banner, .review-sidebar, .review-modal-backdrop, .review-toast-stack, .review-toggle');
+  return !!el.closest('nav, header[role="banner"], footer, .review-banner, .review-sidebar, .review-sidebar-toggle, .review-modal-backdrop, .review-toast');
 }
 
 function anchorPage() {
@@ -148,19 +141,19 @@ function anchorPage() {
       if (text.length < 2) return;
 
       counters[tag] = (counters[tag] || 0) + 1;
-      const n = counters[tag]; // 1-indexed per features.review-widget.anchor-strategy
+      const n = counters[tag];
       const id = `${state.pageSlug}-${tag}-${n}`;
       el.setAttribute('data-comment-id', id);
 
-      // Mount the pill host so deepest-only hover can target it.
       if (!el.querySelector(':scope > .review-pill-container')) {
         const host = document.createElement('span');
         host.className = 'review-pill-container';
         const pill = document.createElement('button');
         pill.className = 'review-pill';
         pill.type = 'button';
-        pill.textContent = state.LABELS.addCommentTitle;
-        pill.title = state.LABELS.addCommentTitle;
+        pill.textContent = '+';
+        pill.setAttribute('aria-label', state.LABELS.modalTitleNew);
+        pill.title = state.LABELS.modalTitleNew;
         pill.addEventListener('click', (ev) => {
           ev.preventDefault();
           ev.stopPropagation();
@@ -176,16 +169,14 @@ function anchorPage() {
 }
 
 // ============================================================
-// Firebase RTDB adapter (features.review-widget.firebase-rtdb-adapter)
+// Firebase RTDB adapter
 // ============================================================
 
 function initRtdb() {
   const fcfg = state.cfg.FIREBASE_CONFIG;
   if (!fcfg || /^TBD/.test(fcfg.apiKey || '')) {
-    // Degraded mode: config is a placeholder. We still bring up the UI,
-    // but writes will throw and the toast will surface the error.
     state.db = null;
-    showToast('error', state.LABELS.errorPrefix + 'Firebase config is placeholder. Writes will fail.');
+    showToast(state.LABELS.errorPrefix + state.LABELS.firebasePlaceholder);
     return false;
   }
   try {
@@ -194,7 +185,7 @@ function initRtdb() {
     return true;
   } catch (err) {
     state.db = null;
-    showToast('error', state.LABELS.errorPrefix + (err && err.message ? err.message : 'firebase-init-error'));
+    showToast(state.LABELS.errorPrefix + (err && err.message ? err.message : 'firebase-init-error'));
     emitEvent('review.failed', {
       pageSlug: state.pageSlug,
       failedAt: Date.now(),
@@ -215,13 +206,14 @@ function subscribeComments(onInitial) {
   let firstFire = true;
   state.unsubscribe = onValue(r, (snap) => {
     const all = snap.val() || {};
-    // Client-side filter by page slug (per firebase-rtdb-adapter §Anti-patterns).
     const filtered = {};
     for (const [id, rec] of Object.entries(all)) {
       if (!rec || rec.page !== state.pageSlug) continue;
-      // Legacy status migration: status of "applied" or "dismissed" → archived: true.
-      if (rec.status && typeof rec.archived === 'undefined') {
-        rec.archived = (rec.status === 'applied' || rec.status === 'dismissed');
+      // Migrate legacy records: archived boolean + status string → status enum
+      if (!rec.status) {
+        if (rec.archived === true) rec.status = 'archived';
+        else if (rec.applied === true) rec.status = 'applied';
+        else rec.status = 'pending';
       }
       filtered[id] = rec;
     }
@@ -233,41 +225,29 @@ function subscribeComments(onInitial) {
       if (typeof onInitial === 'function') onInitial(Object.keys(filtered).length);
     }
   }, (err) => {
-    showToast('error', state.LABELS.errorPrefix + (err && err.message ? err.message : 'RTDB read failed'));
+    showToast(state.LABELS.errorPrefix + (err && err.message ? err.message : 'RTDB read failed'));
   });
 }
 
 async function createComment(rec) {
-  if (!state.db) {
-    showToast('error', state.LABELS.errorPrefix + 'No backend connection.');
-    throw new Error('no-db');
-  }
+  if (!state.db) { showToast(state.LABELS.errorPrefix + state.LABELS.noBackend); throw new Error('no-db'); }
   const r = ref(state.db, 'comments');
   const result = await push(r, rec);
   return result.key;
 }
 
 async function updateComment(id, patch) {
-  if (!state.db) {
-    showToast('error', state.LABELS.errorPrefix + 'No backend connection.');
-    throw new Error('no-db');
-  }
-  const r = ref(state.db, 'comments/' + id);
-  await update(r, patch);
+  if (!state.db) { showToast(state.LABELS.errorPrefix + state.LABELS.noBackend); throw new Error('no-db'); }
+  await update(ref(state.db, 'comments/' + id), patch);
 }
 
 async function removeComment(id) {
-  if (!state.db) {
-    showToast('error', state.LABELS.errorPrefix + 'No backend connection.');
-    throw new Error('no-db');
-  }
-  const r = ref(state.db, 'comments/' + id);
-  await remove(r);
+  if (!state.db) { showToast(state.LABELS.errorPrefix + state.LABELS.noBackend); throw new Error('no-db'); }
+  await remove(ref(state.db, 'comments/' + id));
 }
 
 // ============================================================
-// formatCount — plural-aware (features.review-widget.intl-plural-labels)
-// Defined AFTER LABELS (constructed in init).
+// formatCount — plural-aware
 // ============================================================
 
 function formatCount(n, key) {
@@ -275,17 +255,13 @@ function formatCount(n, key) {
   if (!label || typeof label !== 'object') return String(n);
   const locale = state.LABELS.locale || 'en';
   let cat;
-  try {
-    cat = new Intl.PluralRules(locale).select(n);
-  } catch (_) {
-    cat = (n === 1) ? 'one' : 'other';
-  }
+  try { cat = new Intl.PluralRules(locale).select(n); } catch (_) { cat = (n === 1) ? 'one' : 'other'; }
   const tpl = label[cat] || label.other || label.one || '{n}';
   return tpl.replace('{n}', String(n));
 }
 
 // ============================================================
-// Comment grouping (anchor-keyed) + state derivation
+// Grouping + group state derivation
 // ============================================================
 
 function commentsByAnchor() {
@@ -295,27 +271,31 @@ function commentsByAnchor() {
     if (!groups[a]) groups[a] = [];
     groups[a].push({ id, ...rec });
   }
-  // Sort comments within group oldest-first (natural reading order).
   for (const a of Object.keys(groups)) {
     groups[a].sort((x, y) => (x.timestamp || 0) - (y.timestamp || 0));
   }
   return groups;
 }
 
+// Group state: 'pending' (≥1 comment pending), 'applied' (all non-archived comments applied),
+// 'archived' (all comments archived). Used for filter routing + group-status badge.
 function groupStatus(groupComments) {
-  const active = groupComments.filter((c) => !c.archived);
-  if (active.length > 0) return 'pending';
-  return 'archived';
+  const nonArchived = groupComments.filter((c) => c.status !== 'archived');
+  if (nonArchived.length === 0) return 'archived';
+  const allApplied = nonArchived.every((c) => c.status === 'applied');
+  if (allApplied) return 'applied';
+  return 'pending';
 }
 
 function groupLastActivity(groupComments) {
-  return groupComments.reduce((max, c) => {
-    return Math.max(max, c.edited_at || c.archived_at || c.timestamp || 0);
-  }, 0);
+  return groupComments.reduce((max, c) => Math.max(
+    max,
+    c.applied_at || c.edited_at || c.archived_at || c.timestamp || 0
+  ), 0);
 }
 
 // ============================================================
-// Rendering
+// Element helper
 // ============================================================
 
 function el(tag, attrs = {}, ...children) {
@@ -326,7 +306,7 @@ function el(tag, attrs = {}, ...children) {
       for (const [evt, handler] of Object.entries(v)) node.addEventListener(evt, handler);
     } else if (k === 'style' && typeof v === 'object') {
       Object.assign(node.style, v);
-    } else if (k.startsWith('aria-') || k === 'role' || k === 'type' || k === 'tabindex') {
+    } else if (k.startsWith('aria-') || k === 'role' || k === 'type' || k === 'tabindex' || k === 'href') {
       node.setAttribute(k, v);
     } else if (k === 'dataset') {
       for (const [dk, dv] of Object.entries(v)) node.dataset[dk] = dv;
@@ -346,54 +326,57 @@ function el(tag, attrs = {}, ...children) {
   return node;
 }
 
+// ============================================================
+// Banner — gradient + pulse dot + exit link
+// ============================================================
+
 function mountBanner() {
   const banner = el('header', {
     class: 'review-banner',
     role: 'banner'
   },
     el('div', {},
-      el('span', { class: 'review-banner-text', text: state.LABELS.bannerText }),
-      el('span', { class: 'review-banner-hint', text: state.LABELS.bannerHint })
+      el('span', { class: 'dot' }),
+      document.createTextNode(state.LABELS.bannerText)
     ),
-    el('button', {
-      class: 'review-banner-close',
-      type: 'button',
-      'aria-label': state.LABELS.bannerClose,
-      text: state.LABELS.bannerClose,
-      on: { click: () => exitReview() }
+    el('a', {
+      href: '#exit',
+      text: state.LABELS.bannerExit,
+      on: { click: (ev) => { ev.preventDefault(); exitReview(); } }
     })
   );
   document.body.insertBefore(banner, document.body.firstChild);
 }
 
+// ============================================================
+// Sidebar — header + filter-row + comments list
+// ============================================================
+
 function mountSidebar() {
   const sidebar = el('aside', {
-    class: 'review-sidebar',
+    class: 'review-sidebar' + (state.sidebarOpen ? ' open' : ''),
     role: 'complementary',
-    'aria-label': state.LABELS.sidebarTitle,
-    dataset: { open: String(state.sidebarOpen) }
+    'aria-label': state.LABELS.sidebarTitle
   },
-    el('div', { class: 'review-sidebar-header' },
-      el('h2', { class: 'review-sidebar-title', text: state.LABELS.sidebarTitle }),
-      el('div', { class: 'review-sidebar-filters', role: 'tablist' },
-        filterTab('active', state.LABELS.filterActive),
-        filterTab('archived', state.LABELS.filterArchived)
-      )
+    el('header', {},
+      el('span', { text: state.LABELS.sidebarTitle }),
+      el('span', { class: 'count', text: '' })
     ),
-    el('div', { class: 'review-sidebar-body' }),
-    el('footer', {
-      class: 'review-sidebar-footer',
-      text: state.LABELS.footerSignature || ''
-    })
+    el('div', { class: 'filter-row', role: 'tablist' },
+      filterTab('active', state.LABELS.filterActive),
+      filterTab('applied', state.LABELS.filterApplied),
+      filterTab('archived', state.LABELS.filterArchived)
+    ),
+    el('div', { class: 'comments' })
   );
   document.body.appendChild(sidebar);
 }
 
 function filterTab(key, label) {
   return el('button', {
-    class: 'review-filter-tab',
     type: 'button',
     role: 'tab',
+    class: state.filter === key ? 'active' : '',
     'aria-pressed': String(state.filter === key),
     dataset: { key },
     text: label,
@@ -408,100 +391,91 @@ function filterTab(key, label) {
 
 function mountToggle() {
   const toggle = el('button', {
-    class: 'review-toggle',
+    class: 'review-sidebar-toggle',
     type: 'button',
-    'aria-pressed': String(state.sidebarOpen),
-    'aria-label': state.LABELS.toggleButtonTitle || state.LABELS.toggleButton,
-    title: state.LABELS.toggleButtonTitle || '',
+    'aria-label': state.LABELS.toggleSidebar,
+    text: state.LABELS.toggleSidebar,
     on: {
       click: () => {
         state.sidebarOpen = !state.sidebarOpen;
         const sb = document.querySelector('.review-sidebar');
-        if (sb) sb.dataset.open = String(state.sidebarOpen);
-        toggle.setAttribute('aria-pressed', String(state.sidebarOpen));
-        renderCountBadge();
+        if (sb) sb.classList.toggle('open', state.sidebarOpen);
       }
     }
   });
   document.body.appendChild(toggle);
-  renderCountBadge();
-}
-
-function renderCountBadge() {
-  const toggle = document.querySelector('.review-toggle');
-  if (!toggle) return;
-  toggle.innerHTML = '';
-  toggle.appendChild(document.createTextNode(state.LABELS.toggleButton));
-  const pending = Object.values(state.comments).filter((c) => !c.archived).length;
-  if (pending > 0) {
-    const badge = el('span', { class: 'review-toggle-count', text: String(pending) });
-    toggle.appendChild(badge);
-  }
 }
 
 function renderSidebar() {
-  const body = document.querySelector('.review-sidebar-body');
+  const body = document.querySelector('.review-sidebar .comments');
   if (!body) return;
   body.innerHTML = '';
 
-  const filterTabs = document.querySelectorAll('.review-filter-tab');
-  filterTabs.forEach((t) => t.setAttribute('aria-pressed', String(t.dataset.key === state.filter)));
-
-  const groups = commentsByAnchor();
-  const visible = Object.entries(groups).filter(([_, comments]) => {
-    return groupStatus(comments) === state.filter;
+  // Update active state on filter tabs
+  const tabs = document.querySelectorAll('.review-sidebar .filter-row button');
+  tabs.forEach((t) => {
+    const isActive = t.dataset.key === state.filter;
+    t.classList.toggle('active', isActive);
+    t.setAttribute('aria-pressed', String(isActive));
   });
 
+  const groups = commentsByAnchor();
+  const visible = Object.entries(groups).filter(([_, comments]) => groupStatus(comments) === state.filter);
+
+  // Header count — total non-archived comments visible across pageSlug
+  const headerCountEl = document.querySelector('.review-sidebar header .count');
+  if (headerCountEl) {
+    const totalVisible = Object.values(state.comments).filter((c) => c.status !== 'archived').length;
+    headerCountEl.textContent = totalVisible > 0 ? formatCount(totalVisible, 'commentsCount') : '';
+  }
+
   if (visible.length === 0) {
-    body.appendChild(el('p', { class: 'review-sidebar-empty', text: state.LABELS.sidebarEmpty }));
-    renderCountBadge();
+    body.appendChild(el('div', { class: 'empty', text: state.LABELS.sidebarEmpty }));
     return;
   }
 
-  // Sort groups by last-activity descending.
   visible.sort((a, b) => groupLastActivity(b[1]) - groupLastActivity(a[1]));
 
   for (const [anchorId, comments] of visible) {
     body.appendChild(renderGroup(anchorId, comments));
   }
-  renderCountBadge();
 }
 
 function renderGroup(anchorId, comments) {
   const status = groupStatus(comments);
-  const activeCount = comments.filter((c) => !c.archived).length;
+  const nonArchived = comments.filter((c) => c.status !== 'archived');
+  const count = nonArchived.length;
 
-  const header = el('div', { class: 'review-group-header' },
-    el('span', { class: 'review-group-anchor', text: anchorId }),
-    el('span', {
-      class: 'review-pill-status',
-      dataset: { variant: status === 'pending' ? 'status-pending' : 'status-done' },
-      text: status === 'pending' ? formatCount(activeCount, 'commentsCount') : state.LABELS.statusDone
-    })
+  const previewText = comments[0] && comments[0].text_preview ? '"' + comments[0].text_preview + '"' : '';
+
+  const header = el('div', { class: 'review-group-header',
+    on: { click: () => activateSpotlight(anchorId) }
+  },
+    el('div', { class: 'anchor-row' },
+      el('span', { class: 'anchor', text: anchorId }),
+      status !== 'archived' ? el('span', {
+        class: 'group-status ' + status,
+        text: status === 'applied' ? state.LABELS.statusApplied : state.LABELS.statusPending
+      }) : null
+    ),
+    previewText ? el('div', { class: 'anchor-preview', text: previewText }) : null,
+    count > 0 ? el('div', { class: 'group-count', text: formatCount(count, 'groupCount') }) : null
   );
 
-  const preview = comments[0] && comments[0].text_preview
-    ? el('p', { class: 'review-group-preview', text: '"' + comments[0].text_preview + '"' })
-    : null;
+  const groupEl = el('div', { class: 'review-group', dataset: { anchor: anchorId } }, header);
 
-  const rows = el('ul', { class: 'review-group-rows' });
   for (const c of comments) {
-    rows.appendChild(renderRow(c));
+    groupEl.appendChild(renderComment(c));
   }
 
-  const groupEl = el('div', { class: 'review-group', dataset: { anchor: anchorId } },
-    header, preview, rows
-  );
-
-  // Bulk archive footer — only for pending groups with multiple active comments.
-  if (status === 'pending' && activeCount > 1) {
-    groupEl.appendChild(el('div', { class: 'review-group-bulk' },
+  // Group footer — "Mark group as done" — only when pending and > 1 active comments
+  if (status === 'pending' && count > 1) {
+    groupEl.appendChild(el('div', { class: 'review-group-footer' },
       el('button', {
-        class: 'review-group-bulk-button',
         type: 'button',
-        text: state.LABELS.archiveAllLabel,
-        title: state.LABELS.archiveAllTitle,
-        on: { click: () => bulkArchive(comments.filter((c) => !c.archived).map((c) => c.id)) }
+        class: 'archive-group-btn',
+        text: state.LABELS.archiveGroupLabel,
+        on: { click: () => bulkArchive(nonArchived.map((c) => c.id)) }
       })
     ));
   }
@@ -509,88 +483,101 @@ function renderGroup(anchorId, comments) {
   return groupEl;
 }
 
-function renderRow(c) {
-  const actions = el('div', { class: 'review-row-actions' });
+function renderComment(c) {
+  const statusClass = c.status === 'applied' ? ' applied' : (c.status === 'archived' ? ' archived' : '');
 
-  if (!c.archived) {
+  const actions = el('div', { class: 'actions' });
+
+  if (c.status === 'pending') {
     actions.appendChild(el('button', {
-      class: 'review-row-action', type: 'button',
-      text: state.LABELS.editLabel,
-      title: state.LABELS.editTitle,
+      class: 'apply-btn', type: 'button', text: state.LABELS.applyLabel,
+      on: { click: (ev) => { ev.stopPropagation(); applyComment(c.id); } }
+    }));
+    actions.appendChild(el('button', {
+      class: 'edit-btn', type: 'button', text: state.LABELS.editLabel,
       on: { click: (ev) => { ev.stopPropagation(); openComposerEdit(c); } }
     }));
     actions.appendChild(el('button', {
-      class: 'review-row-action', type: 'button',
-      text: state.LABELS.archiveLabel,
-      title: state.LABELS.archiveTitle,
+      class: 'archive-btn', type: 'button', text: state.LABELS.archiveLabel,
+      on: { click: (ev) => { ev.stopPropagation(); archiveComment(c.id, 'row'); } }
+    }));
+  } else if (c.status === 'applied') {
+    actions.appendChild(el('button', {
+      class: 'restore-btn', type: 'button', text: state.LABELS.restoreLabel,
+      on: { click: (ev) => { ev.stopPropagation(); restoreComment(c.id); } }
+    }));
+    actions.appendChild(el('button', {
+      class: 'archive-btn', type: 'button', text: state.LABELS.archiveLabel,
       on: { click: (ev) => { ev.stopPropagation(); archiveComment(c.id, 'row'); } }
     }));
   } else {
     actions.appendChild(el('button', {
-      class: 'review-row-action', type: 'button',
-      text: state.LABELS.restoreLabel,
-      title: state.LABELS.restoreTitle,
+      class: 'restore-btn', type: 'button', text: state.LABELS.restoreLabel,
       on: { click: (ev) => { ev.stopPropagation(); restoreComment(c.id); } }
     }));
   }
   actions.appendChild(el('button', {
-    class: 'review-row-action', type: 'button',
-    dataset: { variant: 'danger' },
-    text: state.LABELS.deleteLabel,
-    title: state.LABELS.deleteTitle,
+    class: 'delete-btn', type: 'button', text: state.LABELS.deleteLabel,
     on: { click: (ev) => { ev.stopPropagation(); confirmAndDelete(c); } }
   }));
 
-  const row = el('li', {
-    class: 'review-comment-row',
+  return el('div', {
+    class: 'review-comment' + statusClass,
     role: 'button',
     tabindex: '0',
     dataset: { id: c.id },
     on: {
       click: () => activateSpotlight(c.anchor),
       keydown: (ev) => {
-        if (ev.key === 'Enter' || ev.key === ' ') {
-          ev.preventDefault();
-          activateSpotlight(c.anchor);
-        }
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); activateSpotlight(c.anchor); }
       }
     }
   },
-    el('p', { class: 'review-row-text', text: c.comment || '' }),
-    c.replacement ? el('p', { class: 'review-row-replacement', text: c.replacement }) : null,
-    el('div', { class: 'review-row-meta' },
+    el('div', { class: 'text', text: c.comment || '' }),
+    c.replacement ? el('div', { class: 'replacement', text: c.replacement }) : null,
+    el('div', { class: 'meta' },
       el('span', { text: new Date(c.timestamp || 0).toLocaleString(state.LABELS.locale || 'en') }),
-      c.edited_at ? el('span', { text: '· edited' }) : null
+      c.edited_at ? el('span', { text: 'edited' }) : null
     ),
     actions
   );
-  return row;
 }
 
+// ============================================================
+// State-class decoration on anchored elements + pills
+// ============================================================
+
 function decorateHasComments() {
-  // Walk all anchored elements; set data-has-comments="true" where the
-  // group is non-empty.
-  const counts = {};
+  // Per-anchor: has-comment (any non-archived), has-applied-comment (all non-archived applied)
+  const byAnchor = {};
   for (const c of Object.values(state.comments)) {
-    counts[c.anchor] = (counts[c.anchor] || 0) + 1;
+    if (!byAnchor[c.anchor]) byAnchor[c.anchor] = [];
+    byAnchor[c.anchor].push(c);
   }
+
   document.querySelectorAll('[data-comment-id]').forEach((el) => {
     const id = el.getAttribute('data-comment-id');
-    if (counts[id]) el.setAttribute('data-has-comments', 'true');
-    else el.removeAttribute('data-has-comments');
+    const list = byAnchor[id] || [];
+    const nonArchived = list.filter((c) => c.status !== 'archived');
+    const allApplied = nonArchived.length > 0 && nonArchived.every((c) => c.status === 'applied');
+
+    el.classList.toggle('has-comment', nonArchived.length > 0);
+    el.classList.toggle('has-applied-comment', allApplied);
+
+    const pill = el.querySelector(':scope > .review-pill-container > .review-pill');
+    if (pill) {
+      pill.classList.toggle('has-comment', nonArchived.length > 0);
+      pill.classList.toggle('has-applied-comment', allApplied);
+    }
   });
 }
 
 // ============================================================
-// Spotlight (features.review-widget.spotlight-on-click)
+// Spotlight — 1500ms pulse, single-spotlight policy
 // ============================================================
 
 function activateSpotlight(anchorId) {
-  // Clear previous
-  if (state.spotlightTimer) {
-    clearTimeout(state.spotlightTimer);
-    state.spotlightTimer = null;
-  }
+  if (state.spotlightTimer) { clearTimeout(state.spotlightTimer); state.spotlightTimer = null; }
   if (state.spotlightAnchorId) {
     const prev = document.querySelector(`[data-comment-id="${cssEscape(state.spotlightAnchorId)}"]`);
     if (prev) prev.classList.remove('review-spotlit');
@@ -599,17 +586,9 @@ function activateSpotlight(anchorId) {
   const elTarget = document.querySelector(`[data-comment-id="${cssEscape(anchorId)}"]`);
   const found = !!elTarget;
 
-  emitEvent('spotlight.activated', {
-    anchorId,
-    pageSlug: state.pageSlug,
-    found,
-    triggeredAt: Date.now()
-  });
+  emitEvent('spotlight.activated', { anchorId, pageSlug: state.pageSlug, found, triggeredAt: Date.now() });
 
-  if (!found) {
-    showToast('error', state.LABELS.elementGone);
-    return;
-  }
+  if (!found) { showToast(state.LABELS.elementGone); return; }
 
   elTarget.classList.add('review-spotlit');
   elTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -618,7 +597,7 @@ function activateSpotlight(anchorId) {
     elTarget.classList.remove('review-spotlit');
     state.spotlightAnchorId = null;
     state.spotlightTimer = null;
-  }, 4000);
+  }, 1500);
 }
 
 function cssEscape(s) {
@@ -627,20 +606,18 @@ function cssEscape(s) {
 }
 
 // ============================================================
-// Composer modal (features.review-widget.comment-lifecycle)
+// Composer modal — flat prota-aligned structure
 // ============================================================
 
 function openComposerNew(anchorId) {
   state.modal = { open: true, mode: 'new', editingId: null, targetAnchorId: anchorId };
   renderModal();
 }
-
 function openComposerEdit(c) {
   state.modal = { open: true, mode: 'edit', editingId: c.id, targetAnchorId: c.anchor };
   renderModal(c);
 }
-
-function closeComposer(via) {
+function closeComposer() {
   state.modal = { open: false, mode: null, editingId: null, targetAnchorId: null };
   const m = document.querySelector('.review-modal-backdrop');
   if (m) m.remove();
@@ -653,59 +630,48 @@ function renderModal(existing) {
 
   const isEdit = state.modal.mode === 'edit';
   const title = isEdit ? state.LABELS.modalTitleEdit : state.LABELS.modalTitleNew;
+  const anchorId = state.modal.targetAnchorId;
+  const anchorEl = document.querySelector(`[data-comment-id="${cssEscape(anchorId)}"]`);
+  const previewText = anchorEl ? (anchorEl.textContent || '').trim().slice(0, 120) : '';
 
   const commentInput = el('textarea', {
-    class: 'review-field-input',
     placeholder: state.LABELS.modalCommentPlaceholder,
-    rows: '3',
-    value: existing && existing.comment ? existing.comment : ''
+    rows: '3'
   });
+  if (existing && existing.comment) commentInput.value = existing.comment;
+
   const replacementInput = el('textarea', {
-    class: 'review-field-input',
     placeholder: state.LABELS.modalReplacementPlaceholder,
-    rows: '3',
-    value: existing && existing.replacement ? existing.replacement : ''
+    rows: '3'
   });
-  const errorEl = el('div', {
-    class: 'review-modal-error',
-    role: 'alert',
-    text: state.LABELS.modalRequiredError
-  });
+  if (existing && existing.replacement) replacementInput.value = existing.replacement;
+
+  const errorEl = el('div', { class: 'error', text: '' });
 
   const submit = async (ev) => {
     ev.preventDefault();
     const comment = commentInput.value.trim();
     const replacement = replacementInput.value.trim();
     if (!comment && !replacement) {
-      errorEl.setAttribute('data-shown', 'true');
+      errorEl.textContent = state.LABELS.modalRequiredError;
       return;
     }
-    errorEl.removeAttribute('data-shown');
+    errorEl.textContent = '';
 
     try {
       if (isEdit) {
-        await updateComment(state.modal.editingId, {
-          comment, replacement, edited_at: Date.now()
-        });
+        await updateComment(state.modal.editingId, { comment, replacement, edited_at: Date.now() });
         emitEvent('comment.edited', {
-          id: state.modal.editingId,
-          pageSlug: state.pageSlug,
-          anchorId: state.modal.targetAnchorId,
-          text: comment, replacementText: replacement,
-          editedAt: Date.now()
+          id: state.modal.editingId, pageSlug: state.pageSlug,
+          anchorId, text: comment, replacementText: replacement, editedAt: Date.now()
         });
       } else {
-        const anchor = state.modal.targetAnchorId;
-        const anchorEl = document.querySelector(`[data-comment-id="${cssEscape(anchor)}"]`);
-        if (!anchorEl) {
-          showToast('error', state.LABELS.elementGone);
-          return;
-        }
+        if (!anchorEl) { showToast(state.LABELS.elementGone); return; }
         const text_preview = (anchorEl.textContent || '').trim().slice(0, 80);
         const rec = {
           comment, replacement,
-          anchor, page: state.pageSlug,
-          archived: false,
+          anchor: anchorId, page: state.pageSlug,
+          status: 'pending',
           timestamp: Date.now(),
           text_preview,
           url: window.location.href,
@@ -713,77 +679,62 @@ function renderModal(existing) {
         };
         const newId = await createComment(rec);
         emitEvent('comment.created', {
-          id: newId,
-          pageSlug: state.pageSlug,
-          anchorId: anchor,
-          text: comment, replacementText: replacement,
-          createdAt: rec.timestamp
+          id: newId, pageSlug: state.pageSlug, anchorId,
+          text: comment, replacementText: replacement, createdAt: rec.timestamp
         });
       }
-      showToast('success', state.LABELS.saved);
-      closeComposer('submit');
+      showToast(state.LABELS.saved);
+      closeComposer();
     } catch (err) {
-      showToast('error', state.LABELS.errorPrefix + (err && err.message ? err.message : 'save failed'));
+      showToast(state.LABELS.errorPrefix + (err && err.message ? err.message : 'save failed'));
     }
   };
 
-  const backdrop = el('div', {
-    class: 'review-modal-backdrop',
-    on: { click: (ev) => { if (ev.target === backdrop) closeComposer('backdrop'); } }
+  const modal = el('div', {
+    class: 'review-modal',
+    role: 'dialog',
+    'aria-modal': 'true',
+    'aria-labelledby': 'review-modal-title'
   },
-    el('div', {
-      class: 'review-modal',
-      role: 'dialog',
-      'aria-modal': 'true',
-      'aria-labelledby': 'review-modal-title'
-    },
-      el('header', { class: 'review-modal-header' },
-        el('h3', { class: 'review-modal-title', id: 'review-modal-title', text: title }),
-        el('button', {
-          class: 'review-modal-close',
-          type: 'button',
-          'aria-label': state.LABELS.modalClose,
-          html: '&times;',
-          on: { click: () => closeComposer('closeButton') }
-        })
-      ),
-      el('form', { class: 'review-modal-body', on: { submit } },
-        el('div', { class: 'review-field' },
-          el('label', { class: 'review-field-label', text: state.LABELS.modalCommentLabel }),
-          commentInput,
-          el('small', { class: 'review-field-hint', text: state.LABELS.modalCommentHint })
-        ),
-        el('div', { class: 'review-field' },
-          el('label', { class: 'review-field-label', text: state.LABELS.modalReplacementLabel }),
-          replacementInput,
-          el('small', { class: 'review-field-hint', text: state.LABELS.modalReplacementHint })
-        ),
-        errorEl
-      ),
-      el('div', { class: 'review-modal-actions' },
-        el('button', {
-          class: 'review-btn review-btn--secondary',
-          type: 'button',
-          dataset: { variant: 'secondary' },
-          text: state.LABELS.modalCancel,
-          on: { click: () => closeComposer('cancelButton') }
-        }),
-        el('button', {
-          class: 'review-btn review-btn--primary',
-          type: 'button',
-          dataset: { variant: 'primary' },
-          text: isEdit ? state.LABELS.modalSubmitEdit : state.LABELS.modalSubmitNew,
-          on: { click: submit }
-        })
-      )
+    el('h3', { id: 'review-modal-title', text: title }),
+    el('div', { class: 'anchor-info', text: anchorId }),
+    previewText ? el('div', { class: 'anchor-preview', text: '"' + previewText + '"' }) : null,
+    el('label', {},
+      document.createTextNode(state.LABELS.modalCommentLabel + ' '),
+      el('span', { class: 'opt', text: state.LABELS.modalCommentOpt })
+    ),
+    commentInput,
+    el('label', {},
+      document.createTextNode(state.LABELS.modalReplacementLabel + ' '),
+      el('span', { class: 'opt', text: state.LABELS.modalReplacementOpt })
+    ),
+    replacementInput,
+    errorEl,
+    el('div', { class: 'actions' },
+      el('button', {
+        type: 'button',
+        class: 'review-btn review-btn--secondary',
+        text: state.LABELS.modalCancel,
+        on: { click: () => closeComposer() }
+      }),
+      el('button', {
+        type: 'button',
+        class: 'review-btn review-btn--primary',
+        text: isEdit ? state.LABELS.modalSubmitEdit : state.LABELS.modalSubmitNew,
+        on: { click: submit }
+      })
     )
   );
+
+  const backdrop = el('div', {
+    class: 'review-modal-backdrop',
+    on: { click: (ev) => { if (ev.target === backdrop) closeComposer(); } }
+  }, modal);
   document.body.appendChild(backdrop);
 
-  // Escape-key dismissal
   const escHandler = (ev) => {
     if (ev.key === 'Escape') {
-      closeComposer('escape');
+      closeComposer();
       document.removeEventListener('keydown', escHandler);
     }
   };
@@ -793,55 +744,67 @@ function renderModal(existing) {
 }
 
 // ============================================================
-// Comment lifecycle handlers
+// Comment lifecycle — apply / archive / restore / delete
 // ============================================================
+
+async function applyComment(id) {
+  try {
+    await updateComment(id, { status: 'applied', applied_at: Date.now() });
+    emitEvent('comment.applied', {
+      id, pageSlug: state.pageSlug,
+      anchorId: state.comments[id] ? state.comments[id].anchor : '',
+      appliedAt: Date.now()
+    });
+    showToast(state.LABELS.applied);
+  } catch (err) {
+    showToast(state.LABELS.errorPrefix + (err && err.message ? err.message : 'apply failed'));
+  }
+}
 
 async function archiveComment(id, via) {
   try {
-    await updateComment(id, { archived: true, archived_at: Date.now() });
+    await updateComment(id, { status: 'archived', archived_at: Date.now() });
     emitEvent('comment.archived', {
       id, pageSlug: state.pageSlug,
       anchorId: state.comments[id] ? state.comments[id].anchor : '',
-      archivedAt: Date.now(),
-      via: via || 'row'
+      archivedAt: Date.now(), via: via || 'row'
     });
-    showToast('success', state.LABELS.saved);
+    showToast(state.LABELS.archived);
   } catch (err) {
-    showToast('error', state.LABELS.errorPrefix + (err && err.message ? err.message : 'archive failed'));
+    showToast(state.LABELS.errorPrefix + (err && err.message ? err.message : 'archive failed'));
   }
 }
 
 async function restoreComment(id) {
   try {
-    await updateComment(id, { archived: false, archived_at: null });
+    await updateComment(id, { status: 'pending', archived_at: null, applied_at: null });
     emitEvent('comment.restored', {
       id, pageSlug: state.pageSlug,
       anchorId: state.comments[id] ? state.comments[id].anchor : '',
       restoredAt: Date.now()
     });
-    showToast('success', state.LABELS.restoredToActive);
+    showToast(state.LABELS.restored);
   } catch (err) {
-    showToast('error', state.LABELS.errorPrefix + (err && err.message ? err.message : 'restore failed'));
+    showToast(state.LABELS.errorPrefix + (err && err.message ? err.message : 'restore failed'));
   }
 }
 
 async function confirmAndDelete(c) {
   if (!confirm(state.LABELS.confirmDelete)) return;
   try {
-    const snapshot = { ...c };
     await removeComment(c.id);
     emitEvent('comment.deleted', {
       id: c.id, pageSlug: state.pageSlug, anchorId: c.anchor,
       deletedAt: Date.now(), via: 'row',
       snapshot: {
         text: c.comment, replacementText: c.replacement,
-        status: c.archived ? 'archived' : 'active',
+        status: c.status || 'pending',
         createdAt: c.timestamp || 0
       }
     });
-    showToast('success', state.LABELS.deleted);
+    showToast(state.LABELS.deleted);
   } catch (err) {
-    showToast('error', state.LABELS.errorPrefix + (err && err.message ? err.message : 'delete failed'));
+    showToast(state.LABELS.errorPrefix + (err && err.message ? err.message : 'delete failed'));
   }
 }
 
@@ -851,11 +814,10 @@ async function bulkArchive(ids) {
   }
 }
 
-// Public API for programmatic bulk-archive (per pending-archived-workflow §"Bulk archive at group level")
 window.__review = window.__review || {};
 window.__review.archiveComments = async function (ids) {
   for (const id of ids) {
-    await updateComment(id, { archived: true, archived_at: Date.now() });
+    await updateComment(id, { status: 'archived', archived_at: Date.now() });
     emitEvent('comment.archived', {
       id, pageSlug: state.pageSlug,
       anchorId: state.comments[id] ? state.comments[id].anchor : '',
@@ -866,7 +828,7 @@ window.__review.archiveComments = async function (ids) {
 
 window.__review.teardown = function () {
   if (state.unsubscribe) state.unsubscribe();
-  document.querySelectorAll('.review-banner, .review-sidebar, .review-toggle, .review-modal-backdrop, .review-toast-stack').forEach((n) => n.remove());
+  document.querySelectorAll('.review-banner, .review-sidebar, .review-sidebar-toggle, .review-modal-backdrop, .review-toast').forEach((n) => n.remove());
   document.documentElement.removeAttribute('data-review-mode');
   emitEvent('review.exited', {
     pageSlug: state.pageSlug,
@@ -878,37 +840,17 @@ window.__review.teardown = function () {
 };
 
 // ============================================================
-// Toasts
+// Toast — single center-bottom, 2.6s auto-dismiss
 // ============================================================
 
-function ensureToastStack() {
-  let stack = document.querySelector('.review-toast-stack');
-  if (!stack) {
-    stack = el('div', { class: 'review-toast-stack' });
-    document.body.appendChild(stack);
-  }
-  return stack;
-}
+function showToast(message) {
+  const existing = document.querySelector('.review-toast');
+  if (existing) existing.remove();
+  if (state.toastTimer) { clearTimeout(state.toastTimer); state.toastTimer = null; }
 
-function showToast(variant, message) {
-  const stack = ensureToastStack();
-  const toast = el('div', { class: 'review-toast', dataset: { variant }, role: variant === 'error' ? 'alert' : 'status', 'aria-live': variant === 'error' ? 'assertive' : 'polite' },
-    el('span', { text: message }),
-    el('button', {
-      class: 'review-toast-close',
-      type: 'button',
-      'aria-label': state.LABELS.modalClose,
-      html: '&times;',
-      on: { click: () => toast.remove() }
-    })
-  );
-  stack.appendChild(toast);
-  // Cap at 3 visible — oldest dismisses first (FIFO).
-  const all = stack.querySelectorAll('.review-toast');
-  while (all.length > 3) {
-    all[0].remove();
-  }
-  setTimeout(() => { toast.remove(); }, 3500);
+  const toast = el('div', { class: 'review-toast', role: 'status', 'aria-live': 'polite', text: message });
+  document.body.appendChild(toast);
+  state.toastTimer = setTimeout(() => { toast.remove(); state.toastTimer = null; }, 2800);
 }
 
 // ============================================================
@@ -916,23 +858,15 @@ function showToast(variant, message) {
 // ============================================================
 
 function emitEvent(name, detail) {
-  try {
-    window.dispatchEvent(new CustomEvent(name, { detail }));
-  } catch (_) { /* silent */ }
+  try { window.dispatchEvent(new CustomEvent(name, { detail })); } catch (_) { /* silent */ }
 }
 
-// ============================================================
-// Banner exit
-// ============================================================
-
 function exitReview() {
-  // Strip ?review=1 from the URL via history; reload to fully tear down.
   const url = new URL(window.location.href);
   url.searchParams.delete('review');
   window.location.href = url.toString();
 }
 
-// Page-unload event (per events.review-exited.md)
 window.addEventListener('pagehide', () => {
   emitEvent('review.exited', {
     pageSlug: state.pageSlug,
@@ -944,35 +878,28 @@ window.addEventListener('pagehide', () => {
 });
 
 // ============================================================
-// init() — called by review-bootstrap.js after CSS + module load
+// init() — called by review-bootstrap.js
 // ============================================================
 
 export async function init({ basePath, config, configGlobalName }) {
   state.cfg = config || {};
-  // Build LABELS by overlaying cfg.REVIEW_LABELS onto DEFAULT_LABELS (shallow).
   const overrides = (state.cfg.REVIEW_LABELS) || {};
   state.LABELS = Object.assign({}, DEFAULT_LABELS, overrides);
-  // Merge nested plural objects (commentsCount) since shallow overlay would clobber.
-  if (overrides.commentsCount) {
-    state.LABELS.commentsCount = Object.assign({}, DEFAULT_LABELS.commentsCount, overrides.commentsCount);
-  }
+  if (overrides.commentsCount) state.LABELS.commentsCount = Object.assign({}, DEFAULT_LABELS.commentsCount, overrides.commentsCount);
+  if (overrides.groupCount) state.LABELS.groupCount = Object.assign({}, DEFAULT_LABELS.groupCount, overrides.groupCount);
 
   state.pageSlug = derivePageSlug();
   state.loadedAt = Date.now();
   state.sidebarOpen = window.innerWidth > 800;
 
-  // Bring up RTDB (may fail silently into degraded mode).
   initRtdb();
 
-  // Mount chrome.
   mountBanner();
   mountSidebar();
   mountToggle();
 
-  // Anchor the content area.
   const anchoredCount = anchorPage();
 
-  // Subscribe to comments; on initial fetch, emit review.entered.
   subscribeComments((initialCount) => {
     emitEvent('review.entered', {
       pageSlug: state.pageSlug,
@@ -982,8 +909,6 @@ export async function init({ basePath, config, configGlobalName }) {
     });
   });
 
-  // If RTDB is in degraded mode (placeholder config), still emit review.entered
-  // so consumers know the page loaded; the toast already surfaced the degraded state.
   if (!state.db) {
     setTimeout(() => {
       emitEvent('review.entered', {
