@@ -133,7 +133,7 @@ function selectContentArea() {
 }
 
 function isInChrome(el) {
-  return !!el.closest('nav, header[role="banner"], footer, .rv-banner, .rv-sidebar, .rv-modal-backdrop, .rv-toast-stack, .rv-toggle');
+  return !!el.closest('nav, header[role="banner"], footer, .review-banner, .review-sidebar, .review-modal-backdrop, .review-toast-stack, .review-toggle');
 }
 
 function anchorPage() {
@@ -153,11 +153,11 @@ function anchorPage() {
       el.setAttribute('data-comment-id', id);
 
       // Mount the pill host so deepest-only hover can target it.
-      if (!el.querySelector(':scope > .rv-pill-host')) {
+      if (!el.querySelector(':scope > .review-pill-container')) {
         const host = document.createElement('span');
-        host.className = 'rv-pill-host';
+        host.className = 'review-pill-container';
         const pill = document.createElement('button');
-        pill.className = 'rv-pill';
+        pill.className = 'review-pill';
         pill.type = 'button';
         pill.textContent = state.LABELS.addCommentTitle;
         pill.title = state.LABELS.addCommentTitle;
@@ -348,15 +348,15 @@ function el(tag, attrs = {}, ...children) {
 
 function mountBanner() {
   const banner = el('header', {
-    class: 'rv-banner',
+    class: 'review-banner',
     role: 'banner'
   },
     el('div', {},
-      el('span', { class: 'rv-banner-text', text: state.LABELS.bannerText }),
-      el('span', { class: 'rv-banner-hint', text: state.LABELS.bannerHint })
+      el('span', { class: 'review-banner-text', text: state.LABELS.bannerText }),
+      el('span', { class: 'review-banner-hint', text: state.LABELS.bannerHint })
     ),
     el('button', {
-      class: 'rv-banner-close',
+      class: 'review-banner-close',
       type: 'button',
       'aria-label': state.LABELS.bannerClose,
       text: state.LABELS.bannerClose,
@@ -368,21 +368,21 @@ function mountBanner() {
 
 function mountSidebar() {
   const sidebar = el('aside', {
-    class: 'rv-sidebar',
+    class: 'review-sidebar',
     role: 'complementary',
     'aria-label': state.LABELS.sidebarTitle,
     dataset: { open: String(state.sidebarOpen) }
   },
-    el('div', { class: 'rv-sidebar-header' },
-      el('h2', { class: 'rv-sidebar-title', text: state.LABELS.sidebarTitle }),
-      el('div', { class: 'rv-sidebar-filters', role: 'tablist' },
+    el('div', { class: 'review-sidebar-header' },
+      el('h2', { class: 'review-sidebar-title', text: state.LABELS.sidebarTitle }),
+      el('div', { class: 'review-sidebar-filters', role: 'tablist' },
         filterTab('active', state.LABELS.filterActive),
         filterTab('archived', state.LABELS.filterArchived)
       )
     ),
-    el('div', { class: 'rv-sidebar-body' }),
+    el('div', { class: 'review-sidebar-body' }),
     el('footer', {
-      class: 'rv-sidebar-footer',
+      class: 'review-sidebar-footer',
       text: state.LABELS.footerSignature || ''
     })
   );
@@ -391,7 +391,7 @@ function mountSidebar() {
 
 function filterTab(key, label) {
   return el('button', {
-    class: 'rv-filter-tab',
+    class: 'review-filter-tab',
     type: 'button',
     role: 'tab',
     'aria-pressed': String(state.filter === key),
@@ -408,7 +408,7 @@ function filterTab(key, label) {
 
 function mountToggle() {
   const toggle = el('button', {
-    class: 'rv-toggle',
+    class: 'review-toggle',
     type: 'button',
     'aria-pressed': String(state.sidebarOpen),
     'aria-label': state.LABELS.toggleButtonTitle || state.LABELS.toggleButton,
@@ -416,7 +416,7 @@ function mountToggle() {
     on: {
       click: () => {
         state.sidebarOpen = !state.sidebarOpen;
-        const sb = document.querySelector('.rv-sidebar');
+        const sb = document.querySelector('.review-sidebar');
         if (sb) sb.dataset.open = String(state.sidebarOpen);
         toggle.setAttribute('aria-pressed', String(state.sidebarOpen));
         renderCountBadge();
@@ -428,23 +428,23 @@ function mountToggle() {
 }
 
 function renderCountBadge() {
-  const toggle = document.querySelector('.rv-toggle');
+  const toggle = document.querySelector('.review-toggle');
   if (!toggle) return;
   toggle.innerHTML = '';
   toggle.appendChild(document.createTextNode(state.LABELS.toggleButton));
   const pending = Object.values(state.comments).filter((c) => !c.archived).length;
   if (pending > 0) {
-    const badge = el('span', { class: 'rv-toggle-count', text: String(pending) });
+    const badge = el('span', { class: 'review-toggle-count', text: String(pending) });
     toggle.appendChild(badge);
   }
 }
 
 function renderSidebar() {
-  const body = document.querySelector('.rv-sidebar-body');
+  const body = document.querySelector('.review-sidebar-body');
   if (!body) return;
   body.innerHTML = '';
 
-  const filterTabs = document.querySelectorAll('.rv-filter-tab');
+  const filterTabs = document.querySelectorAll('.review-filter-tab');
   filterTabs.forEach((t) => t.setAttribute('aria-pressed', String(t.dataset.key === state.filter)));
 
   const groups = commentsByAnchor();
@@ -453,7 +453,7 @@ function renderSidebar() {
   });
 
   if (visible.length === 0) {
-    body.appendChild(el('p', { class: 'rv-sidebar-empty', text: state.LABELS.sidebarEmpty }));
+    body.appendChild(el('p', { class: 'review-sidebar-empty', text: state.LABELS.sidebarEmpty }));
     renderCountBadge();
     return;
   }
@@ -471,33 +471,33 @@ function renderGroup(anchorId, comments) {
   const status = groupStatus(comments);
   const activeCount = comments.filter((c) => !c.archived).length;
 
-  const header = el('div', { class: 'rv-group-header' },
-    el('span', { class: 'rv-group-anchor', text: anchorId }),
+  const header = el('div', { class: 'review-group-header' },
+    el('span', { class: 'review-group-anchor', text: anchorId }),
     el('span', {
-      class: 'rv-pill-status',
+      class: 'review-pill-status',
       dataset: { variant: status === 'pending' ? 'status-pending' : 'status-done' },
       text: status === 'pending' ? formatCount(activeCount, 'commentsCount') : state.LABELS.statusDone
     })
   );
 
   const preview = comments[0] && comments[0].text_preview
-    ? el('p', { class: 'rv-group-preview', text: '"' + comments[0].text_preview + '"' })
+    ? el('p', { class: 'review-group-preview', text: '"' + comments[0].text_preview + '"' })
     : null;
 
-  const rows = el('ul', { class: 'rv-group-rows' });
+  const rows = el('ul', { class: 'review-group-rows' });
   for (const c of comments) {
     rows.appendChild(renderRow(c));
   }
 
-  const groupEl = el('div', { class: 'rv-group', dataset: { anchor: anchorId } },
+  const groupEl = el('div', { class: 'review-group', dataset: { anchor: anchorId } },
     header, preview, rows
   );
 
   // Bulk archive footer — only for pending groups with multiple active comments.
   if (status === 'pending' && activeCount > 1) {
-    groupEl.appendChild(el('div', { class: 'rv-group-bulk' },
+    groupEl.appendChild(el('div', { class: 'review-group-bulk' },
       el('button', {
-        class: 'rv-group-bulk-button',
+        class: 'review-group-bulk-button',
         type: 'button',
         text: state.LABELS.archiveAllLabel,
         title: state.LABELS.archiveAllTitle,
@@ -510,31 +510,31 @@ function renderGroup(anchorId, comments) {
 }
 
 function renderRow(c) {
-  const actions = el('div', { class: 'rv-row-actions' });
+  const actions = el('div', { class: 'review-row-actions' });
 
   if (!c.archived) {
     actions.appendChild(el('button', {
-      class: 'rv-row-action', type: 'button',
+      class: 'review-row-action', type: 'button',
       text: state.LABELS.editLabel,
       title: state.LABELS.editTitle,
       on: { click: (ev) => { ev.stopPropagation(); openComposerEdit(c); } }
     }));
     actions.appendChild(el('button', {
-      class: 'rv-row-action', type: 'button',
+      class: 'review-row-action', type: 'button',
       text: state.LABELS.archiveLabel,
       title: state.LABELS.archiveTitle,
       on: { click: (ev) => { ev.stopPropagation(); archiveComment(c.id, 'row'); } }
     }));
   } else {
     actions.appendChild(el('button', {
-      class: 'rv-row-action', type: 'button',
+      class: 'review-row-action', type: 'button',
       text: state.LABELS.restoreLabel,
       title: state.LABELS.restoreTitle,
       on: { click: (ev) => { ev.stopPropagation(); restoreComment(c.id); } }
     }));
   }
   actions.appendChild(el('button', {
-    class: 'rv-row-action', type: 'button',
+    class: 'review-row-action', type: 'button',
     dataset: { variant: 'danger' },
     text: state.LABELS.deleteLabel,
     title: state.LABELS.deleteTitle,
@@ -542,7 +542,7 @@ function renderRow(c) {
   }));
 
   const row = el('li', {
-    class: 'rv-row',
+    class: 'review-comment-row',
     role: 'button',
     tabindex: '0',
     dataset: { id: c.id },
@@ -556,9 +556,9 @@ function renderRow(c) {
       }
     }
   },
-    el('p', { class: 'rv-row-text', text: c.comment || '' }),
-    c.replacement ? el('p', { class: 'rv-row-replacement', text: c.replacement }) : null,
-    el('div', { class: 'rv-row-meta' },
+    el('p', { class: 'review-row-text', text: c.comment || '' }),
+    c.replacement ? el('p', { class: 'review-row-replacement', text: c.replacement }) : null,
+    el('div', { class: 'review-row-meta' },
       el('span', { text: new Date(c.timestamp || 0).toLocaleString(state.LABELS.locale || 'en') }),
       c.edited_at ? el('span', { text: '· edited' }) : null
     ),
@@ -593,7 +593,7 @@ function activateSpotlight(anchorId) {
   }
   if (state.spotlightAnchorId) {
     const prev = document.querySelector(`[data-comment-id="${cssEscape(state.spotlightAnchorId)}"]`);
-    if (prev) prev.classList.remove('rv-spotlight');
+    if (prev) prev.classList.remove('review-spotlit');
   }
 
   const elTarget = document.querySelector(`[data-comment-id="${cssEscape(anchorId)}"]`);
@@ -611,11 +611,11 @@ function activateSpotlight(anchorId) {
     return;
   }
 
-  elTarget.classList.add('rv-spotlight');
+  elTarget.classList.add('review-spotlit');
   elTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
   state.spotlightAnchorId = anchorId;
   state.spotlightTimer = setTimeout(() => {
-    elTarget.classList.remove('rv-spotlight');
+    elTarget.classList.remove('review-spotlit');
     state.spotlightAnchorId = null;
     state.spotlightTimer = null;
   }, 4000);
@@ -642,12 +642,12 @@ function openComposerEdit(c) {
 
 function closeComposer(via) {
   state.modal = { open: false, mode: null, editingId: null, targetAnchorId: null };
-  const m = document.querySelector('.rv-modal-backdrop');
+  const m = document.querySelector('.review-modal-backdrop');
   if (m) m.remove();
 }
 
 function renderModal(existing) {
-  const old = document.querySelector('.rv-modal-backdrop');
+  const old = document.querySelector('.review-modal-backdrop');
   if (old) old.remove();
   if (!state.modal.open) return;
 
@@ -655,19 +655,19 @@ function renderModal(existing) {
   const title = isEdit ? state.LABELS.modalTitleEdit : state.LABELS.modalTitleNew;
 
   const commentInput = el('textarea', {
-    class: 'rv-field-input',
+    class: 'review-field-input',
     placeholder: state.LABELS.modalCommentPlaceholder,
     rows: '3',
     value: existing && existing.comment ? existing.comment : ''
   });
   const replacementInput = el('textarea', {
-    class: 'rv-field-input',
+    class: 'review-field-input',
     placeholder: state.LABELS.modalReplacementPlaceholder,
     rows: '3',
     value: existing && existing.replacement ? existing.replacement : ''
   });
   const errorEl = el('div', {
-    class: 'rv-modal-error',
+    class: 'review-modal-error',
     role: 'alert',
     text: state.LABELS.modalRequiredError
   });
@@ -728,48 +728,48 @@ function renderModal(existing) {
   };
 
   const backdrop = el('div', {
-    class: 'rv-modal-backdrop',
+    class: 'review-modal-backdrop',
     on: { click: (ev) => { if (ev.target === backdrop) closeComposer('backdrop'); } }
   },
     el('div', {
-      class: 'rv-modal',
+      class: 'review-modal',
       role: 'dialog',
       'aria-modal': 'true',
-      'aria-labelledby': 'rv-modal-title'
+      'aria-labelledby': 'review-modal-title'
     },
-      el('header', { class: 'rv-modal-header' },
-        el('h3', { class: 'rv-modal-title', id: 'rv-modal-title', text: title }),
+      el('header', { class: 'review-modal-header' },
+        el('h3', { class: 'review-modal-title', id: 'review-modal-title', text: title }),
         el('button', {
-          class: 'rv-modal-close',
+          class: 'review-modal-close',
           type: 'button',
           'aria-label': state.LABELS.modalClose,
           html: '&times;',
           on: { click: () => closeComposer('closeButton') }
         })
       ),
-      el('form', { class: 'rv-modal-body', on: { submit } },
-        el('div', { class: 'rv-field' },
-          el('label', { class: 'rv-field-label', text: state.LABELS.modalCommentLabel }),
+      el('form', { class: 'review-modal-body', on: { submit } },
+        el('div', { class: 'review-field' },
+          el('label', { class: 'review-field-label', text: state.LABELS.modalCommentLabel }),
           commentInput,
-          el('small', { class: 'rv-field-hint', text: state.LABELS.modalCommentHint })
+          el('small', { class: 'review-field-hint', text: state.LABELS.modalCommentHint })
         ),
-        el('div', { class: 'rv-field' },
-          el('label', { class: 'rv-field-label', text: state.LABELS.modalReplacementLabel }),
+        el('div', { class: 'review-field' },
+          el('label', { class: 'review-field-label', text: state.LABELS.modalReplacementLabel }),
           replacementInput,
-          el('small', { class: 'rv-field-hint', text: state.LABELS.modalReplacementHint })
+          el('small', { class: 'review-field-hint', text: state.LABELS.modalReplacementHint })
         ),
         errorEl
       ),
-      el('div', { class: 'rv-modal-actions' },
+      el('div', { class: 'review-modal-actions' },
         el('button', {
-          class: 'rv-button',
+          class: 'review-btn review-btn--secondary',
           type: 'button',
           dataset: { variant: 'secondary' },
           text: state.LABELS.modalCancel,
           on: { click: () => closeComposer('cancelButton') }
         }),
         el('button', {
-          class: 'rv-button',
+          class: 'review-btn review-btn--primary',
           type: 'button',
           dataset: { variant: 'primary' },
           text: isEdit ? state.LABELS.modalSubmitEdit : state.LABELS.modalSubmitNew,
@@ -866,7 +866,7 @@ window.__review.archiveComments = async function (ids) {
 
 window.__review.teardown = function () {
   if (state.unsubscribe) state.unsubscribe();
-  document.querySelectorAll('.rv-banner, .rv-sidebar, .rv-toggle, .rv-modal-backdrop, .rv-toast-stack').forEach((n) => n.remove());
+  document.querySelectorAll('.review-banner, .review-sidebar, .review-toggle, .review-modal-backdrop, .review-toast-stack').forEach((n) => n.remove());
   document.documentElement.removeAttribute('data-review-mode');
   emitEvent('review.exited', {
     pageSlug: state.pageSlug,
@@ -882,9 +882,9 @@ window.__review.teardown = function () {
 // ============================================================
 
 function ensureToastStack() {
-  let stack = document.querySelector('.rv-toast-stack');
+  let stack = document.querySelector('.review-toast-stack');
   if (!stack) {
-    stack = el('div', { class: 'rv-toast-stack' });
+    stack = el('div', { class: 'review-toast-stack' });
     document.body.appendChild(stack);
   }
   return stack;
@@ -892,10 +892,10 @@ function ensureToastStack() {
 
 function showToast(variant, message) {
   const stack = ensureToastStack();
-  const toast = el('div', { class: 'rv-toast', dataset: { variant }, role: variant === 'error' ? 'alert' : 'status', 'aria-live': variant === 'error' ? 'assertive' : 'polite' },
+  const toast = el('div', { class: 'review-toast', dataset: { variant }, role: variant === 'error' ? 'alert' : 'status', 'aria-live': variant === 'error' ? 'assertive' : 'polite' },
     el('span', { text: message }),
     el('button', {
-      class: 'rv-toast-close',
+      class: 'review-toast-close',
       type: 'button',
       'aria-label': state.LABELS.modalClose,
       html: '&times;',
@@ -904,7 +904,7 @@ function showToast(variant, message) {
   );
   stack.appendChild(toast);
   // Cap at 3 visible — oldest dismisses first (FIFO).
-  const all = stack.querySelectorAll('.rv-toast');
+  const all = stack.querySelectorAll('.review-toast');
   while (all.length > 3) {
     all[0].remove();
   }

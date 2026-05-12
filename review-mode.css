@@ -1,8 +1,13 @@
 /* public/method/review-mode.css
  *
- * Composed 2026-05-10 from library/features/review-widget/.
- * Theme: default (pinned). Per-token overrides from brand/design-tokens/.
- * See .composition-manifest.md alongside this file for the full provenance.
+ * Re-emitted 2026-05-12 from library/features/review-widget/ against the
+ * css-isolation contract (library/features/review-widget/css-isolation.md
+ * blob 368780bcf2892e7bffe4f7b74896278fbcc028f2).
+ *
+ * Originally composed 2026-05-10 with class prefix `.rv-`; re-emitted with
+ * canonical `.review-` prefix + BEM button variants + mandatory chrome
+ * reset + display:none pill baseline + has-comment outline + button
+ * font/color/background inheritance reset.
  *
  * Scope: every rule is gated by html[data-review-mode="on"] so the
  * stylesheet is inert when the widget isn't activated. Bootstrap sets
@@ -22,82 +27,128 @@
 
 html[data-review-mode="on"] {
   /* Colors — Glinda overrides */
-  --rv-primary-deep: #8705E4;
-  --rv-accent-warm: #FF8B5C;
-  --rv-accent-cool: #53DEFF;
-  --rv-feedback-amber: #FFC857;
-  --rv-feedback-red: #E63946;
-  --rv-neutral-deep: #01055E;
-  --rv-surface-base: #FFFFFF;
-  --rv-surface-overlay: rgba(1, 5, 94, 0.5);
+  --review-primary-deep: #8705E4;
+  --review-accent-warm: #FF8B5C;
+  --review-accent-cool: #53DEFF;
+  --review-feedback-amber: #FFC857;
+  --review-feedback-red: #E63946;
+  --review-neutral-deep: #01055E;
+  --review-surface-base: #FFFFFF;
+  --review-surface-overlay: rgba(1, 5, 94, 0.5);
 
   /* Derived utility colors */
-  --rv-amber-tint: rgba(255, 200, 87, 0.18);
-  --rv-cool-tint: rgba(83, 222, 255, 0.15);
-  --rv-warm-tint: rgba(255, 139, 92, 0.15);
-  --rv-text-muted: #434343;
-  --rv-border-soft: rgba(1, 5, 94, 0.12);
+  --review-accent-warm-low: rgba(255, 139, 92, 0.22);
+  --review-amber-tint: rgba(255, 200, 87, 0.18);
+  --review-cool-tint: rgba(83, 222, 255, 0.15);
+  --review-warm-tint: rgba(255, 139, 92, 0.15);
+  --review-text-muted: #434343;
+  --review-border-soft: rgba(1, 5, 94, 0.12);
 
   /* Typography — library defaults */
-  --rv-font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --rv-fs-meta: 0.6875rem;
-  --rv-fs-small: 0.75rem;
-  --rv-fs-body: 0.875rem;
-  --rv-fs-label: 1rem;
-  --rv-fs-title: 1.125rem;
-  --rv-fs-heading: 1.25rem;
+  --review-font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --review-fs-meta: 0.6875rem;
+  --review-fs-small: 0.75rem;
+  --review-fs-body: 0.875rem;
+  --review-fs-label: 1rem;
+  --review-fs-title: 1.125rem;
+  --review-fs-heading: 1.25rem;
 
   /* Spacing — library defaults */
-  --rv-sp-xs: 0.25rem;
-  --rv-sp-sm: 0.5rem;
-  --rv-sp-md: 0.75rem;
-  --rv-sp-lg: 1rem;
-  --rv-sp-xl: 1.5rem;
-  --rv-sp-xxl: 2rem;
+  --review-sp-xs: 0.25rem;
+  --review-sp-sm: 0.5rem;
+  --review-sp-md: 0.75rem;
+  --review-sp-lg: 1rem;
+  --review-sp-xl: 1.5rem;
+  --review-sp-xxl: 2rem;
 
   /* Layout */
-  --rv-z-banner: 9999;
-  --rv-z-sidebar: 9998;
-  --rv-z-toggle: 9997;
-  --rv-z-modal: 10001;
-  --rv-z-toast: 10002;
-  --rv-banner-height: 40px;
-  --rv-sidebar-width: 360px;
+  --review-z-banner: 9999;
+  --review-z-sidebar: 9998;
+  --review-z-toggle: 9997;
+  --review-z-modal: 10001;
+  --review-z-toast: 10002;
+  --review-banner-height: 40px;
+  --review-sidebar-width: 360px;
 }
 
 /* Push body content down so the page's own header/nav doesn't get hidden behind the banner. */
 html[data-review-mode="on"] body {
-  padding-top: var(--rv-banner-height);
+  padding-top: var(--review-banner-height);
 }
 
 /* =====================================================================
- * Anchored elements — every element matching the anchor TAG list (set
- * via JS) gets a subtle default outline, plus a spotlight class when a
- * sidebar row is clicked.
- *
- * Per features.review-widget.spotlight-on-click: a default low-alpha
- * dashed outline always sits on has-comment elements; the spotlight
- * class adds the bold solid outline + expanding ring on click only.
+ * CHROME RESET — per library/features/review-widget/css-isolation.md
+ * §"Widget chrome reset". Establishes clean styling roots so host-page
+ * cascades don't bleed into widget containers. `all: revert` undoes any
+ * inherited host styles; widget rules then build up explicitly.
+ * `box-sizing: border-box` is non-negotiable across all chrome.
+ * ===================================================================== */
+
+html[data-review-mode="on"] .review-banner,
+html[data-review-mode="on"] .review-sidebar,
+html[data-review-mode="on"] .review-modal,
+html[data-review-mode="on"] .review-modal-backdrop,
+html[data-review-mode="on"] .review-toast,
+html[data-review-mode="on"] .review-toast-stack,
+html[data-review-mode="on"] .review-toggle,
+html[data-review-mode="on"] .review-pill,
+html[data-review-mode="on"] .review-pill-container,
+html[data-review-mode="on"] .review-pill-status {
+  all: revert;
+  font-family: var(--review-font-sans);
+  box-sizing: border-box;
+  line-height: 1.4;
+}
+
+/* Box-sizing also extends to everything inside chrome roots so child
+ * element padding math is predictable regardless of host page. */
+html[data-review-mode="on"] .review-banner *,
+html[data-review-mode="on"] .review-sidebar *,
+html[data-review-mode="on"] .review-modal *,
+html[data-review-mode="on"] .review-toast *,
+html[data-review-mode="on"] .review-toggle *,
+html[data-review-mode="on"] .review-pill *,
+html[data-review-mode="on"] .review-pill-container * {
+  box-sizing: border-box;
+}
+
+/* =====================================================================
+ * HAS-COMMENT OUTLINE + ANCHORED ELEMENT BASELINE
+ * Per library/features/review-widget/anchor-strategy.md §"Visual treatment".
+ * Every element matching the anchor TAG list gets a subtle persistent
+ * dashed outline indicating it's commentable, plus position: relative
+ * so the pill positions correctly.
  * ===================================================================== */
 
 html[data-review-mode="on"] [data-comment-id] {
+  outline: 1px dashed var(--review-accent-warm-low);
+  outline-offset: 2px;
   position: relative;
 }
 
+/* When the element actually has comments attached, deepen the outline
+ * slightly so reviewers can spot it at a glance. */
 html[data-review-mode="on"] [data-comment-id][data-has-comments="true"] {
-  outline: 1px dashed rgba(135, 5, 228, 0.2);
-  outline-offset: 4px;
+  outline-color: var(--review-accent-warm);
 }
 
-html[data-review-mode="on"] [data-comment-id].rv-spotlight {
-  outline: 3px solid var(--rv-accent-warm);
-  outline-offset: 6px;
-  animation: rv-spotlight-pulse 4s cubic-bezier(0.4, 0, 0.2, 1) 1;
+/* =====================================================================
+ * SPOTLIGHT — per library/features/review-widget/spotlight-on-click.md
+ * and library/features/review-widget/css-isolation.md §"Spotlight class".
+ * Solid bold outline + outward-expanding ring on row click; auto-clears
+ * at 4s. prefers-reduced-motion suppresses the ring; solid outline still
+ * appears for the duration.
+ * ===================================================================== */
+
+html[data-review-mode="on"] [data-comment-id].review-spotlit {
+  outline: 2px solid var(--review-accent-warm);
+  outline-offset: 2px;
+  animation: review-spotlight-pulse 4s cubic-bezier(0.4, 0, 0.2, 1) 1 forwards;
 }
 
-@keyframes rv-spotlight-pulse {
+@keyframes review-spotlight-pulse {
   0% {
-    box-shadow: 0 0 0 0 var(--rv-accent-warm);
+    box-shadow: 0 0 0 0 var(--review-accent-warm);
   }
   100% {
     box-shadow: 0 0 0 12px rgba(255, 139, 92, 0);
@@ -105,158 +156,242 @@ html[data-review-mode="on"] [data-comment-id].rv-spotlight {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html[data-review-mode="on"] [data-comment-id].rv-spotlight {
+  html[data-review-mode="on"] [data-comment-id].review-spotlit {
     animation: none;
   }
 }
 
 /* =====================================================================
- * Pill — action variant (hover-revealed "Add comment")
- * Per features.review-widget.pill-hover-deepest: visible only on the
- * deepest hovered anchored element.
+ * HOVER PILL — per library/features/review-widget/pill-hover-deepest.md
+ * §"Required emission". The display: none baseline is non-negotiable.
+ * Host-page rules that set display:block on generic spans cannot win
+ * because this rule lives under the [data-review-mode="on"] +
+ * .review-pill specificity floor. The hover override is the ONLY way
+ * to reveal the pill — and only on the deepest hovered element.
  * ===================================================================== */
 
-html[data-review-mode="on"] .rv-pill-host {
+/* Baseline: pill always hidden. Host pages cannot break this. */
+html[data-review-mode="on"] .review-pill {
+  display: none;
+}
+
+/* Deepest-hovered anchored element reveals its pill. The :not(:has(...))
+ * is the deepest-only mechanism — an element is "deepest hovered" only
+ * when no descendant is also currently hovered. */
+html[data-review-mode="on"] [data-comment-id]:hover:not(:has([data-comment-id]:hover)) > .review-pill-container > .review-pill,
+html[data-review-mode="on"] [data-comment-id]:hover:not(:has([data-comment-id]:hover)) .review-pill-container > .review-pill {
+  display: inline-flex;
+}
+
+/* Pointer-events pair — container is transparent to clicks (so host
+ * element's links still work), pill itself accepts clicks. */
+html[data-review-mode="on"] .review-pill-container {
+  pointer-events: none;
   position: absolute;
   top: 0;
   right: -8px;
   transform: translate(100%, -25%);
-  pointer-events: none;
   z-index: 10;
 }
 
-html[data-review-mode="on"] .rv-pill {
-  display: none;
-  font-family: var(--rv-font-sans);
-  font-size: var(--rv-fs-small);
+html[data-review-mode="on"] .review-pill {
+  pointer-events: auto;
+  font-family: inherit;
+  font-size: var(--review-fs-small);
   font-weight: 600;
   line-height: 1;
-  padding: var(--rv-sp-xs) var(--rv-sp-sm);
+  padding: var(--review-sp-xs) var(--review-sp-sm);
   border-radius: 9999px;
   border: none;
   cursor: pointer;
-  background: var(--rv-accent-warm);
-  color: var(--rv-surface-base);
-  pointer-events: auto;
+  background: var(--review-accent-warm);
+  color: var(--review-surface-base);
   white-space: nowrap;
   box-shadow: 0 2px 6px rgba(1, 5, 94, 0.18);
   transition: transform 0.1s ease-out;
 }
 
-html[data-review-mode="on"] .rv-pill:hover {
+html[data-review-mode="on"] .review-pill:hover {
   transform: translateY(-1px);
 }
 
-html[data-review-mode="on"] .rv-pill:focus-visible {
-  outline: 2px solid var(--rv-primary-deep);
+html[data-review-mode="on"] .review-pill:focus-visible {
+  outline: 2px solid var(--review-primary-deep);
   outline-offset: 2px;
 }
 
-/* Deepest-only: pill visible only when the host is hovered AND has no
- * descendants currently hovered. The :has() selector is the deepest-only
- * mechanism (Chrome/Edge ≥105, Firefox ≥121, Safari ≥15.4). */
-html[data-review-mode="on"] [data-comment-id]:hover:not(:has([data-comment-id]:hover)) > .rv-pill-host > .rv-pill,
-html[data-review-mode="on"] [data-comment-id]:hover:not(:has([data-comment-id]:hover)) .rv-pill-host > .rv-pill {
-  display: inline-block;
-}
-
 /* =====================================================================
- * Pill — status variants (pending / done) in sidebar group headers
+ * PILL STATUS VARIANTS (pending / done) — sidebar group headers
  * ===================================================================== */
 
-html[data-review-mode="on"] .rv-pill-status {
+html[data-review-mode="on"] .review-pill-status {
   display: inline-block;
-  font-family: var(--rv-font-sans);
-  font-size: var(--rv-fs-small);
+  font-family: inherit;
+  font-size: var(--review-fs-small);
   font-weight: 600;
   line-height: 1;
-  padding: var(--rv-sp-xs) var(--rv-sp-sm);
+  padding: var(--review-sp-xs) var(--review-sp-sm);
   border-radius: 9999px;
   white-space: nowrap;
+  border: none;
 }
 
-html[data-review-mode="on"] .rv-pill-status[data-variant="status-pending"] {
-  background: var(--rv-amber-tint);
-  color: var(--rv-neutral-deep);
+html[data-review-mode="on"] .review-pill-status[data-variant="status-pending"] {
+  background: var(--review-amber-tint);
+  color: var(--review-neutral-deep);
 }
 
-html[data-review-mode="on"] .rv-pill-status[data-variant="status-done"] {
-  background: var(--rv-cool-tint);
-  color: var(--rv-neutral-deep);
+html[data-review-mode="on"] .review-pill-status[data-variant="status-done"] {
+  background: var(--review-cool-tint);
+  color: var(--review-neutral-deep);
 }
 
 /* =====================================================================
- * Banner (component: banner) — fixed top strip, primary-deep background
+ * BUTTON ISOLATION — per library/components/button.md §"Required emission"
+ * and library/features/review-widget/css-isolation.md §"Button isolation".
+ *
+ * Explicit font-family: inherit, background: transparent, color: inherit,
+ * border, padding, cursor — overriding any host-page button { ... } rule.
+ * Without this, glinda's site-button styles (or any other host page's
+ * button defaults) cascade in and the widget loses visual consistency.
+ *
+ * BEM variants: .review-btn is the base; .review-btn--primary, --secondary,
+ * --danger are the variant suffixes.
  * ===================================================================== */
 
-html[data-review-mode="on"] .rv-banner {
+html[data-review-mode="on"] .review-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--review-sp-sm) var(--review-sp-md);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: var(--review-fs-label);
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  background: transparent;
+  color: inherit;
+  text-decoration: none;
+  user-select: none;
+}
+
+html[data-review-mode="on"] .review-btn--primary {
+  background: var(--review-primary-deep);
+  color: var(--review-surface-base);
+  border-color: var(--review-primary-deep);
+}
+
+html[data-review-mode="on"] .review-btn--primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+html[data-review-mode="on"] .review-btn--secondary {
+  background: var(--review-surface-base);
+  color: var(--review-neutral-deep);
+  border-color: var(--review-border-soft);
+}
+
+html[data-review-mode="on"] .review-btn--secondary:hover:not(:disabled) {
+  background: rgba(1, 5, 94, 0.04);
+}
+
+html[data-review-mode="on"] .review-btn--danger {
+  background: var(--review-surface-base);
+  color: var(--review-feedback-red);
+  border-color: var(--review-feedback-red);
+}
+
+html[data-review-mode="on"] .review-btn--danger:hover:not(:disabled) {
+  background: rgba(230, 57, 70, 0.08);
+}
+
+html[data-review-mode="on"] .review-btn:disabled,
+html[data-review-mode="on"] .review-btn[aria-busy="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+html[data-review-mode="on"] .review-btn:focus-visible {
+  outline: 2px solid var(--review-accent-warm);
+  outline-offset: 2px;
+}
+
+/* =====================================================================
+ * BANNER — top-fixed strip, primary-deep background
+ * ===================================================================== */
+
+html[data-review-mode="on"] .review-banner {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: var(--rv-banner-height);
-  background: var(--rv-primary-deep);
-  color: var(--rv-surface-base);
-  font-family: var(--rv-font-sans);
-  z-index: var(--rv-z-banner);
+  height: var(--review-banner-height);
+  background: var(--review-primary-deep);
+  color: var(--review-surface-base);
+  z-index: var(--review-z-banner);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--rv-sp-lg);
+  padding: 0 var(--review-sp-lg);
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
 }
 
-html[data-review-mode="on"] .rv-banner-text {
-  font-size: var(--rv-fs-heading);
+html[data-review-mode="on"] .review-banner-text {
+  font-family: inherit;
+  font-size: var(--review-fs-heading);
   font-weight: 600;
   letter-spacing: -0.005em;
+  color: inherit;
 }
 
-html[data-review-mode="on"] .rv-banner-hint {
-  font-size: var(--rv-fs-body);
+html[data-review-mode="on"] .review-banner-hint {
+  font-family: inherit;
+  font-size: var(--review-fs-body);
   font-weight: 400;
   opacity: 0.85;
-  margin-left: var(--rv-sp-md);
+  margin-left: var(--review-sp-md);
+  color: inherit;
 }
 
-html[data-review-mode="on"] .rv-banner-close {
+html[data-review-mode="on"] .review-banner-close {
   background: transparent;
-  color: var(--rv-surface-base);
+  color: var(--review-surface-base);
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 4px;
-  padding: var(--rv-sp-xs) var(--rv-sp-md);
-  font-family: var(--rv-font-sans);
-  font-size: var(--rv-fs-small);
+  padding: var(--review-sp-xs) var(--review-sp-md);
+  font-family: inherit;
+  font-size: var(--review-fs-small);
   cursor: pointer;
 }
 
-html[data-review-mode="on"] .rv-banner-close:hover {
+html[data-review-mode="on"] .review-banner-close:hover {
   background: rgba(255, 255, 255, 0.12);
 }
 
-html[data-review-mode="on"] .rv-banner-close:focus-visible {
-  outline: 2px solid var(--rv-accent-cool);
+html[data-review-mode="on"] .review-banner-close:focus-visible {
+  outline: 2px solid var(--review-accent-cool);
   outline-offset: 2px;
 }
 
 @media (max-width: 600px) {
-  html[data-review-mode="on"] .rv-banner-hint { display: none; }
+  html[data-review-mode="on"] .review-banner-hint { display: none; }
 }
 
 /* =====================================================================
- * Sidebar drawer (component: sidebar-drawer)
+ * SIDEBAR DRAWER
  * ===================================================================== */
 
-html[data-review-mode="on"] .rv-sidebar {
+html[data-review-mode="on"] .review-sidebar {
   position: fixed;
-  top: var(--rv-banner-height);
+  top: var(--review-banner-height);
   right: 0;
-  width: var(--rv-sidebar-width);
-  height: calc(100vh - var(--rv-banner-height));
-  background: var(--rv-surface-base);
-  color: var(--rv-neutral-deep);
-  font-family: var(--rv-font-sans);
-  z-index: var(--rv-z-sidebar);
+  width: var(--review-sidebar-width);
+  height: calc(100vh - var(--review-banner-height));
+  background: var(--review-surface-base);
+  color: var(--review-neutral-deep);
+  z-index: var(--review-z-sidebar);
   box-shadow: -2px 0 12px rgba(1, 5, 94, 0.08);
   display: flex;
   flex-direction: column;
@@ -264,280 +399,276 @@ html[data-review-mode="on"] .rv-sidebar {
   transition: transform 0.18s ease-out;
 }
 
-html[data-review-mode="on"] .rv-sidebar[data-open="false"] {
+html[data-review-mode="on"] .review-sidebar[data-open="false"] {
   transform: translateX(100%);
 }
 
-/* Auto-collapse below the sidebar-collapse breakpoint */
 @media (max-width: 800px) {
-  html[data-review-mode="on"] .rv-sidebar {
+  html[data-review-mode="on"] .review-sidebar {
     transform: translateX(100%);
   }
-  html[data-review-mode="on"] .rv-sidebar[data-open="true"] {
+  html[data-review-mode="on"] .review-sidebar[data-open="true"] {
     transform: translateX(0);
   }
 }
 
-html[data-review-mode="on"] .rv-sidebar-header {
-  padding: var(--rv-sp-lg) var(--rv-sp-xl) var(--rv-sp-md);
-  border-bottom: 1px solid var(--rv-border-soft);
+html[data-review-mode="on"] .review-sidebar-header {
+  padding: var(--review-sp-lg) var(--review-sp-xl) var(--review-sp-md);
+  border-bottom: 1px solid var(--review-border-soft);
 }
 
-html[data-review-mode="on"] .rv-sidebar-title {
-  font-size: var(--rv-fs-title);
+html[data-review-mode="on"] .review-sidebar-title {
+  font-family: inherit;
+  font-size: var(--review-fs-title);
   font-weight: 600;
-  margin: 0 0 var(--rv-sp-md);
-  color: var(--rv-neutral-deep);
+  margin: 0 0 var(--review-sp-md);
+  color: var(--review-neutral-deep);
 }
 
-html[data-review-mode="on"] .rv-sidebar-filters {
+html[data-review-mode="on"] .review-sidebar-filters {
   display: flex;
-  gap: var(--rv-sp-sm);
+  gap: var(--review-sp-sm);
 }
 
-html[data-review-mode="on"] .rv-filter-tab {
+html[data-review-mode="on"] .review-filter-tab {
   background: transparent;
-  color: var(--rv-text-muted);
-  border: 1px solid var(--rv-border-soft);
+  color: var(--review-text-muted);
+  border: 1px solid var(--review-border-soft);
   border-radius: 4px;
-  padding: var(--rv-sp-xs) var(--rv-sp-md);
-  font-family: var(--rv-font-sans);
-  font-size: var(--rv-fs-small);
+  padding: var(--review-sp-xs) var(--review-sp-md);
+  font-family: inherit;
+  font-size: var(--review-fs-small);
   cursor: pointer;
 }
 
-html[data-review-mode="on"] .rv-filter-tab[aria-pressed="true"] {
-  background: var(--rv-primary-deep);
-  color: var(--rv-surface-base);
-  border-color: var(--rv-primary-deep);
+html[data-review-mode="on"] .review-filter-tab[aria-pressed="true"] {
+  background: var(--review-primary-deep);
+  color: var(--review-surface-base);
+  border-color: var(--review-primary-deep);
 }
 
-html[data-review-mode="on"] .rv-filter-tab:focus-visible {
-  outline: 2px solid var(--rv-accent-warm);
+html[data-review-mode="on"] .review-filter-tab:focus-visible {
+  outline: 2px solid var(--review-accent-warm);
   outline-offset: 2px;
 }
 
-html[data-review-mode="on"] .rv-sidebar-body {
+html[data-review-mode="on"] .review-sidebar-body {
   flex: 1;
   overflow-y: auto;
-  padding: var(--rv-sp-md) 0;
+  padding: var(--review-sp-md) 0;
 }
 
-html[data-review-mode="on"] .rv-sidebar-empty {
-  padding: var(--rv-sp-xl);
-  color: var(--rv-text-muted);
-  font-size: var(--rv-fs-body);
+html[data-review-mode="on"] .review-sidebar-empty {
+  padding: var(--review-sp-xl);
+  color: var(--review-text-muted);
+  font-size: var(--review-fs-body);
   text-align: center;
   font-style: italic;
 }
 
 /* Comment groups */
-html[data-review-mode="on"] .rv-group {
-  border-bottom: 1px solid var(--rv-border-soft);
+html[data-review-mode="on"] .review-group {
+  border-bottom: 1px solid var(--review-border-soft);
 }
 
-html[data-review-mode="on"] .rv-group-header {
+html[data-review-mode="on"] .review-group-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--rv-sp-md) var(--rv-sp-xl) var(--rv-sp-sm);
-  gap: var(--rv-sp-sm);
+  padding: var(--review-sp-md) var(--review-sp-xl) var(--review-sp-sm);
+  gap: var(--review-sp-sm);
 }
 
-html[data-review-mode="on"] .rv-group-anchor {
-  font-family: var(--rv-font-sans);
-  font-size: var(--rv-fs-meta);
-  color: var(--rv-text-muted);
+html[data-review-mode="on"] .review-group-anchor {
+  font-family: inherit;
+  font-size: var(--review-fs-meta);
+  color: var(--review-text-muted);
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-html[data-review-mode="on"] .rv-group-preview {
-  font-size: var(--rv-fs-body);
-  color: var(--rv-neutral-deep);
-  padding: 0 var(--rv-sp-xl);
-  margin: 0 0 var(--rv-sp-sm);
+html[data-review-mode="on"] .review-group-preview {
+  font-size: var(--review-fs-body);
+  color: var(--review-neutral-deep);
+  padding: 0 var(--review-sp-xl);
+  margin: 0 0 var(--review-sp-sm);
   line-height: 1.4;
   font-style: italic;
   opacity: 0.8;
 }
 
-html[data-review-mode="on"] .rv-group-rows {
+html[data-review-mode="on"] .review-group-rows {
   padding: 0;
   list-style: none;
   margin: 0;
 }
 
-html[data-review-mode="on"] .rv-row {
-  padding: var(--rv-sp-md) var(--rv-sp-xl);
+html[data-review-mode="on"] .review-comment-row {
+  padding: var(--review-sp-md) var(--review-sp-xl);
   cursor: pointer;
-  border-top: 1px solid var(--rv-border-soft);
+  border-top: 1px solid var(--review-border-soft);
   display: flex;
   flex-direction: column;
-  gap: var(--rv-sp-sm);
+  gap: var(--review-sp-sm);
 }
 
-html[data-review-mode="on"] .rv-row:hover {
+html[data-review-mode="on"] .review-comment-row:hover {
   background: rgba(135, 5, 228, 0.04);
 }
 
-html[data-review-mode="on"] .rv-row:focus-within {
+html[data-review-mode="on"] .review-comment-row:focus-within {
   background: rgba(135, 5, 228, 0.06);
 }
 
-html[data-review-mode="on"] .rv-row-text {
-  font-size: var(--rv-fs-body);
-  color: var(--rv-neutral-deep);
+html[data-review-mode="on"] .review-row-text {
+  font-size: var(--review-fs-body);
+  color: var(--review-neutral-deep);
   line-height: 1.5;
   margin: 0;
 }
 
-html[data-review-mode="on"] .rv-row-replacement {
-  font-size: var(--rv-fs-body);
-  color: var(--rv-text-muted);
+html[data-review-mode="on"] .review-row-replacement {
+  font-size: var(--review-fs-body);
+  color: var(--review-text-muted);
   line-height: 1.45;
   margin: 0;
-  padding: var(--rv-sp-sm);
-  background: var(--rv-cool-tint);
+  padding: var(--review-sp-sm);
+  background: var(--review-cool-tint);
   border-radius: 4px;
-  border-left: 2px solid var(--rv-accent-cool);
+  border-left: 2px solid var(--review-accent-cool);
 }
 
-html[data-review-mode="on"] .rv-row-meta {
-  font-size: var(--rv-fs-meta);
-  color: var(--rv-text-muted);
+html[data-review-mode="on"] .review-row-meta {
+  font-size: var(--review-fs-meta);
+  color: var(--review-text-muted);
   display: flex;
-  gap: var(--rv-sp-md);
+  gap: var(--review-sp-md);
 }
 
-html[data-review-mode="on"] .rv-row-actions {
+html[data-review-mode="on"] .review-row-actions {
   display: flex;
-  gap: var(--rv-sp-xs);
-  margin-top: var(--rv-sp-xs);
+  gap: var(--review-sp-xs);
+  margin-top: var(--review-sp-xs);
 }
 
-html[data-review-mode="on"] .rv-row-action {
+html[data-review-mode="on"] .review-row-action {
   background: transparent;
-  color: var(--rv-primary-deep);
-  border: 1px solid var(--rv-border-soft);
+  color: var(--review-primary-deep);
+  border: 1px solid var(--review-border-soft);
   border-radius: 4px;
-  padding: var(--rv-sp-xs) var(--rv-sp-sm);
-  font-family: var(--rv-font-sans);
-  font-size: var(--rv-fs-small);
+  padding: var(--review-sp-xs) var(--review-sp-sm);
+  font-family: inherit;
+  font-size: var(--review-fs-small);
   cursor: pointer;
 }
 
-html[data-review-mode="on"] .rv-row-action:hover {
+html[data-review-mode="on"] .review-row-action:hover {
   background: rgba(135, 5, 228, 0.06);
 }
 
-html[data-review-mode="on"] .rv-row-action[data-variant="danger"] {
-  color: var(--rv-feedback-red);
+html[data-review-mode="on"] .review-row-action[data-variant="danger"] {
+  color: var(--review-feedback-red);
 }
 
-html[data-review-mode="on"] .rv-row-action[data-variant="danger"]:hover {
+html[data-review-mode="on"] .review-row-action[data-variant="danger"]:hover {
   background: rgba(230, 57, 70, 0.08);
 }
 
-html[data-review-mode="on"] .rv-row-action:focus-visible {
-  outline: 2px solid var(--rv-accent-warm);
+html[data-review-mode="on"] .review-row-action:focus-visible {
+  outline: 2px solid var(--review-accent-warm);
   outline-offset: 1px;
 }
 
-/* Group bulk archive button */
-html[data-review-mode="on"] .rv-group-bulk {
-  padding: var(--rv-sp-sm) var(--rv-sp-xl) var(--rv-sp-md);
+html[data-review-mode="on"] .review-group-bulk {
+  padding: var(--review-sp-sm) var(--review-sp-xl) var(--review-sp-md);
 }
 
-html[data-review-mode="on"] .rv-group-bulk-button {
+html[data-review-mode="on"] .review-group-bulk-button {
   background: transparent;
-  color: var(--rv-text-muted);
-  border: 1px solid var(--rv-border-soft);
+  color: var(--review-text-muted);
+  border: 1px solid var(--review-border-soft);
   border-radius: 4px;
-  padding: var(--rv-sp-xs) var(--rv-sp-md);
-  font-family: var(--rv-font-sans);
-  font-size: var(--rv-fs-small);
+  padding: var(--review-sp-xs) var(--review-sp-md);
+  font-family: inherit;
+  font-size: var(--review-fs-small);
   cursor: pointer;
 }
 
-html[data-review-mode="on"] .rv-group-bulk-button:hover {
+html[data-review-mode="on"] .review-group-bulk-button:hover {
   background: rgba(1, 5, 94, 0.04);
 }
 
 /* =====================================================================
- * Toggle button (component: toggle-button) — floating, visible only
- * when the sidebar is collapsed
+ * TOGGLE BUTTON — floating affordance for collapsed sidebar
  * ===================================================================== */
 
-html[data-review-mode="on"] .rv-toggle {
+html[data-review-mode="on"] .review-toggle {
   position: fixed;
-  bottom: var(--rv-sp-lg);
-  right: var(--rv-sp-lg);
-  background: var(--rv-primary-deep);
-  color: var(--rv-surface-base);
+  bottom: var(--review-sp-lg);
+  right: var(--review-sp-lg);
+  background: var(--review-primary-deep);
+  color: var(--review-surface-base);
   border: none;
   border-radius: 9999px;
-  padding: var(--rv-sp-md) var(--rv-sp-lg);
-  font-family: var(--rv-font-sans);
-  font-size: var(--rv-fs-label);
+  padding: var(--review-sp-md) var(--review-sp-lg);
+  font-family: inherit;
+  font-size: var(--review-fs-label);
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(1, 5, 94, 0.22);
-  z-index: var(--rv-z-toggle);
+  z-index: var(--review-z-toggle);
   display: none;
 }
 
-html[data-review-mode="on"] .rv-toggle[aria-pressed="false"] {
+html[data-review-mode="on"] .review-toggle[aria-pressed="false"] {
   display: inline-flex;
   align-items: center;
-  gap: var(--rv-sp-sm);
+  gap: var(--review-sp-sm);
 }
 
-html[data-review-mode="on"] .rv-toggle-count {
-  background: var(--rv-accent-warm);
-  color: var(--rv-surface-base);
-  padding: var(--rv-sp-xs) var(--rv-sp-sm);
+html[data-review-mode="on"] .review-toggle-count {
+  background: var(--review-accent-warm);
+  color: var(--review-surface-base);
+  padding: var(--review-sp-xs) var(--review-sp-sm);
   border-radius: 9999px;
-  font-size: var(--rv-fs-small);
+  font-size: var(--review-fs-small);
   min-width: 22px;
   text-align: center;
 }
 
-html[data-review-mode="on"] .rv-toggle:focus-visible {
-  outline: 2px solid var(--rv-accent-cool);
+html[data-review-mode="on"] .review-toggle:focus-visible {
+  outline: 2px solid var(--review-accent-cool);
   outline-offset: 3px;
 }
 
-/* Above the sidebar-collapse breakpoint, sidebar is visible by default,
- * so toggle is hidden unless the user explicitly closes the sidebar. */
 @media (min-width: 801px) {
-  html[data-review-mode="on"] .rv-toggle {
+  html[data-review-mode="on"] .review-toggle {
     display: none;
   }
-  html[data-review-mode="on"] .rv-sidebar[data-open="false"] ~ .rv-toggle[aria-pressed="false"] {
+  html[data-review-mode="on"] .review-sidebar[data-open="false"] ~ .review-toggle[aria-pressed="false"] {
     display: inline-flex;
   }
 }
 
 /* =====================================================================
- * Modal shell (component: modal-shell) + composer (comment-lifecycle)
+ * MODAL — composer
  * ===================================================================== */
 
-html[data-review-mode="on"] .rv-modal-backdrop {
+html[data-review-mode="on"] .review-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: var(--rv-surface-overlay);
-  z-index: var(--rv-z-modal);
+  background: var(--review-surface-overlay);
+  z-index: var(--review-z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--rv-sp-lg);
+  padding: var(--review-sp-lg);
 }
 
-html[data-review-mode="on"] .rv-modal {
-  background: var(--rv-surface-base);
-  color: var(--rv-neutral-deep);
+html[data-review-mode="on"] .review-modal {
+  background: var(--review-surface-base);
+  color: var(--review-neutral-deep);
   border-radius: 8px;
   width: 100%;
   max-width: 480px;
@@ -547,223 +678,175 @@ html[data-review-mode="on"] .rv-modal {
   box-shadow: 0 16px 48px rgba(1, 5, 94, 0.25);
 }
 
-html[data-review-mode="on"] .rv-modal-header {
+html[data-review-mode="on"] .review-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--rv-sp-lg) var(--rv-sp-xl);
-  border-bottom: 1px solid var(--rv-border-soft);
+  padding: var(--review-sp-lg) var(--review-sp-xl);
+  border-bottom: 1px solid var(--review-border-soft);
 }
 
-html[data-review-mode="on"] .rv-modal-title {
-  font-size: var(--rv-fs-title);
+html[data-review-mode="on"] .review-modal-title {
+  font-family: inherit;
+  font-size: var(--review-fs-title);
   font-weight: 600;
   margin: 0;
 }
 
-html[data-review-mode="on"] .rv-modal-close {
+html[data-review-mode="on"] .review-modal-close {
   background: transparent;
-  color: var(--rv-text-muted);
+  color: var(--review-text-muted);
   border: none;
+  font-family: inherit;
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
-  padding: var(--rv-sp-xs) var(--rv-sp-sm);
+  padding: var(--review-sp-xs) var(--review-sp-sm);
 }
 
-html[data-review-mode="on"] .rv-modal-body {
-  padding: var(--rv-sp-xl);
+html[data-review-mode="on"] .review-modal-body {
+  padding: var(--review-sp-xl);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: var(--rv-sp-lg);
+  gap: var(--review-sp-lg);
 }
 
-html[data-review-mode="on"] .rv-field {
+html[data-review-mode="on"] .review-field {
   display: flex;
   flex-direction: column;
-  gap: var(--rv-sp-xs);
+  gap: var(--review-sp-xs);
 }
 
-html[data-review-mode="on"] .rv-field-label {
-  font-size: var(--rv-fs-label);
+html[data-review-mode="on"] .review-field-label {
+  font-family: inherit;
+  font-size: var(--review-fs-label);
   font-weight: 600;
-  color: var(--rv-neutral-deep);
+  color: var(--review-neutral-deep);
 }
 
-html[data-review-mode="on"] .rv-field-hint {
-  font-size: var(--rv-fs-small);
-  color: var(--rv-text-muted);
+html[data-review-mode="on"] .review-field-hint {
+  font-family: inherit;
+  font-size: var(--review-fs-small);
+  color: var(--review-text-muted);
   font-style: italic;
 }
 
-html[data-review-mode="on"] .rv-field-input {
-  font-family: var(--rv-font-sans);
-  font-size: var(--rv-fs-label);
-  color: var(--rv-neutral-deep);
-  background: var(--rv-surface-base);
-  border: 1px solid var(--rv-border-soft);
+html[data-review-mode="on"] .review-field-input {
+  font-family: inherit;
+  font-size: var(--review-fs-label);
+  color: var(--review-neutral-deep);
+  background: var(--review-surface-base);
+  border: 1px solid var(--review-border-soft);
   border-radius: 4px;
-  padding: var(--rv-sp-md);
+  padding: var(--review-sp-md);
   resize: vertical;
   min-height: 4.5rem;
   line-height: 1.5;
 }
 
-html[data-review-mode="on"] .rv-field-input:focus-visible {
-  outline: 2px solid var(--rv-primary-deep);
+html[data-review-mode="on"] .review-field-input:focus-visible {
+  outline: 2px solid var(--review-primary-deep);
   outline-offset: 0;
-  border-color: var(--rv-primary-deep);
+  border-color: var(--review-primary-deep);
 }
 
-html[data-review-mode="on"] .rv-modal-error {
-  font-size: var(--rv-fs-body);
-  color: var(--rv-feedback-red);
+html[data-review-mode="on"] .review-modal-error {
+  font-family: inherit;
+  font-size: var(--review-fs-body);
+  color: var(--review-feedback-red);
   background: rgba(230, 57, 70, 0.08);
-  padding: var(--rv-sp-sm) var(--rv-sp-md);
+  padding: var(--review-sp-sm) var(--review-sp-md);
   border-radius: 4px;
   display: none;
 }
 
-html[data-review-mode="on"] .rv-modal-error[data-shown="true"] {
+html[data-review-mode="on"] .review-modal-error[data-shown="true"] {
   display: block;
 }
 
-html[data-review-mode="on"] .rv-modal-actions {
+html[data-review-mode="on"] .review-modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: var(--rv-sp-sm);
-  padding: var(--rv-sp-lg) var(--rv-sp-xl);
-  border-top: 1px solid var(--rv-border-soft);
-}
-
-/* Button component — primary / secondary / danger */
-html[data-review-mode="on"] .rv-button {
-  font-family: var(--rv-font-sans);
-  font-size: var(--rv-fs-label);
-  font-weight: 600;
-  padding: var(--rv-sp-sm) var(--rv-sp-lg);
-  border-radius: 4px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  line-height: 1;
-}
-
-html[data-review-mode="on"] .rv-button[data-variant="primary"] {
-  background: var(--rv-primary-deep);
-  color: var(--rv-surface-base);
-  border-color: var(--rv-primary-deep);
-}
-
-html[data-review-mode="on"] .rv-button[data-variant="primary"]:hover:not(:disabled) {
-  filter: brightness(1.08);
-}
-
-html[data-review-mode="on"] .rv-button[data-variant="secondary"] {
-  background: var(--rv-surface-base);
-  color: var(--rv-neutral-deep);
-  border-color: var(--rv-border-soft);
-}
-
-html[data-review-mode="on"] .rv-button[data-variant="secondary"]:hover:not(:disabled) {
-  background: rgba(1, 5, 94, 0.04);
-}
-
-html[data-review-mode="on"] .rv-button[data-variant="danger"] {
-  background: var(--rv-surface-base);
-  color: var(--rv-feedback-red);
-  border-color: var(--rv-feedback-red);
-}
-
-html[data-review-mode="on"] .rv-button[data-variant="danger"]:hover:not(:disabled) {
-  background: rgba(230, 57, 70, 0.08);
-}
-
-html[data-review-mode="on"] .rv-button:disabled,
-html[data-review-mode="on"] .rv-button[aria-busy="true"] {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-html[data-review-mode="on"] .rv-button:focus-visible {
-  outline: 2px solid var(--rv-accent-warm);
-  outline-offset: 2px;
+  gap: var(--review-sp-sm);
+  padding: var(--review-sp-lg) var(--review-sp-xl);
+  border-top: 1px solid var(--review-border-soft);
 }
 
 /* =====================================================================
- * Toast (component: toast) — bottom-right stack, three variants
+ * TOAST
  * ===================================================================== */
 
-html[data-review-mode="on"] .rv-toast-stack {
+html[data-review-mode="on"] .review-toast-stack {
   position: fixed;
-  bottom: calc(var(--rv-sp-lg) + 60px);
-  right: var(--rv-sp-lg);
-  z-index: var(--rv-z-toast);
+  bottom: calc(var(--review-sp-lg) + 60px);
+  right: var(--review-sp-lg);
+  z-index: var(--review-z-toast);
   display: flex;
   flex-direction: column-reverse;
-  gap: var(--rv-sp-sm);
+  gap: var(--review-sp-sm);
   pointer-events: none;
 }
 
-html[data-review-mode="on"] .rv-toast {
+html[data-review-mode="on"] .review-toast {
   pointer-events: auto;
-  background: var(--rv-surface-base);
-  color: var(--rv-neutral-deep);
-  font-family: var(--rv-font-sans);
-  font-size: var(--rv-fs-body);
-  padding: var(--rv-sp-md) var(--rv-sp-lg);
+  background: var(--review-surface-base);
+  color: var(--review-neutral-deep);
+  font-family: inherit;
+  font-size: var(--review-fs-body);
+  padding: var(--review-sp-md) var(--review-sp-lg);
   border-radius: 4px;
-  border-left: 4px solid var(--rv-accent-cool);
+  border-left: 4px solid var(--review-accent-cool);
   min-width: 220px;
   max-width: 360px;
   box-shadow: 0 8px 24px rgba(1, 5, 94, 0.18);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--rv-sp-md);
-  animation: rv-toast-in 0.18s ease-out;
+  gap: var(--review-sp-md);
+  animation: review-toast-in 0.18s ease-out;
 }
 
-@keyframes rv-toast-in {
+@keyframes review-toast-in {
   from { transform: translateY(8px); opacity: 0; }
   to   { transform: translateY(0); opacity: 1; }
 }
 
-html[data-review-mode="on"] .rv-toast[data-variant="error"] {
-  border-left-color: var(--rv-feedback-red);
+html[data-review-mode="on"] .review-toast[data-variant="error"] {
+  border-left-color: var(--review-feedback-red);
 }
 
-html[data-review-mode="on"] .rv-toast[data-variant="info"] {
-  border-left-color: var(--rv-text-muted);
+html[data-review-mode="on"] .review-toast[data-variant="info"] {
+  border-left-color: var(--review-text-muted);
 }
 
-html[data-review-mode="on"] .rv-toast-close {
+html[data-review-mode="on"] .review-toast-close {
   background: transparent;
-  color: var(--rv-text-muted);
+  color: var(--review-text-muted);
   border: none;
+  font-family: inherit;
   font-size: 1.125rem;
   line-height: 1;
   cursor: pointer;
-  padding: 0 var(--rv-sp-xs);
+  padding: 0 var(--review-sp-xs);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html[data-review-mode="on"] .rv-toast {
+  html[data-review-mode="on"] .review-toast {
     animation: none;
   }
 }
 
 /* =====================================================================
- * Footer signature inside sidebar — Glinda house signature per
- * .claude/variations/voice-md-shape.md
+ * SIDEBAR FOOTER — Glinda signature
  * ===================================================================== */
 
-html[data-review-mode="on"] .rv-sidebar-footer {
-  padding: var(--rv-sp-md) var(--rv-sp-xl);
-  border-top: 1px solid var(--rv-border-soft);
-  font-family: var(--rv-font-sans);
-  font-size: var(--rv-fs-small);
-  color: var(--rv-primary-deep);
+html[data-review-mode="on"] .review-sidebar-footer {
+  padding: var(--review-sp-md) var(--review-sp-xl);
+  border-top: 1px solid var(--review-border-soft);
+  font-family: inherit;
+  font-size: var(--review-fs-small);
+  color: var(--review-primary-deep);
   font-style: italic;
   text-align: center;
 }
