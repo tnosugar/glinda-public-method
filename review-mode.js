@@ -277,14 +277,18 @@ function commentsByAnchor() {
   return groups;
 }
 
-// Group state: 'pending' (≥1 comment pending), 'applied' (all non-archived comments applied),
+// Group state: 'active' (≥1 comment pending), 'applied' (all non-archived comments applied),
 // 'archived' (all comments archived). Used for filter routing + group-status badge.
+// Bridge note: filter-tab keys are 'active' / 'applied' / 'archived' (UX naming);
+// the comment-status enum on individual comments is 'pending' / 'applied' /
+// 'archived' (lifecycle naming). This function maps the latter to the former
+// so the default-selected 'active' tab matches groups containing pending work.
 function groupStatus(groupComments) {
   const nonArchived = groupComments.filter((c) => c.status !== 'archived');
   if (nonArchived.length === 0) return 'archived';
   const allApplied = nonArchived.every((c) => c.status === 'applied');
   if (allApplied) return 'applied';
-  return 'pending';
+  return 'active';
 }
 
 function groupLastActivity(groupComments) {
