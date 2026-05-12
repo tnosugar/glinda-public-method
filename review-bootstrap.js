@@ -1,14 +1,21 @@
 // public/method/review-bootstrap.js
 //
 // Composed 2026-05-10 from library/features/review-widget/.
+// Re-composed 2026-05-13 for the inert-entry-button atomic.
 // See .composition-manifest.md alongside this file for full provenance.
 //
-// Inert-by-default loader. Reads window.location.search for ?review=1.
-// If present, dynamically loads review-mode.css + review-mode.js, then
-// hands off to the module. If absent, this file does nothing — no CSS
-// loaded, no module loaded, no RTDB connection.
+// Loaded on every page. Two responsibilities:
 //
-// Self-locating: derives its own URL via document.currentScript so that
+//   1. ALWAYS — injects a floating entry button (bottom-right) per
+//      library/features/review-widget/inert-entry-button.md. Clicking
+//      it sets ?review=1 and hard-reloads, triggering (2) below.
+//
+//   2. WHEN ?review=1 — dynamically loads review-mode.css and
+//      review-mode.js, sets data-review-mode="on", and hands off to
+//      the widget module. The entry button is hidden in this state;
+//      the banner's Exit affordance handles the reverse transition.
+//
+// Self-locating: derives its own URL via document.currentScript so
 // review-mode.css and review-mode.js are loaded from the same folder,
 // regardless of whether the site serves at the github.io sub-path or
 // the canonical CNAME root.
@@ -18,9 +25,83 @@
 (function () {
   'use strict';
 
-  // Soft gate. Default (no flag) → return immediately.
   var params = new URLSearchParams(window.location.search);
-  if (params.get('review') !== '1') {
+  var reviewActive = params.get('review') === '1';
+
+  // ----- (1) Inert-page entry button per inert-entry-button.md -----
+  // Injected on the inert path only — the function early-exits when
+  // review is already active. Token-resolved colors are pinned here as
+  // literals (glinda's brand-token values):
+  //   background       primary-deep      #8705E4
+  //   color            surface-base      #FFFFFF
+  //   hover background primary-darker    #6804B5
+  //   shadow tint      surface-overlay   rgba(1, 5, 94, 0.18) / 0.22
+  // If brand/design-tokens/ values change, re-compose this block.
+  function injectEntryButton() {
+    if (reviewActive) return;
+
+    var style = document.createElement('style');
+    style.textContent = [
+      '.review-toggle-btn {',
+      '  position: fixed;',
+      '  bottom: 20px;',
+      '  right: 20px;',
+      '  z-index: 9990;',
+      '  background: #8705E4;',
+      '  color: #FFFFFF;',
+      '  border: none;',
+      '  padding: 12px 20px;',
+      '  border-radius: 999px;',
+      '  cursor: pointer;',
+      '  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;',
+      '  font-size: 13px;',
+      '  font-weight: 600;',
+      '  letter-spacing: 0.04em;',
+      '  box-shadow: 0 4px 14px rgba(1, 5, 94, 0.18);',
+      '  transition: transform .15s, box-shadow .15s, background .15s;',
+      '  display: inline-flex;',
+      '  align-items: center;',
+      '  gap: 8px;',
+      '}',
+      '.review-toggle-btn:hover {',
+      '  transform: translateY(-1px);',
+      '  background: #6804B5;',
+      '  box-shadow: 0 6px 20px rgba(1, 5, 94, 0.22);',
+      '}',
+      '.review-toggle-btn:active {',
+      '  transform: translateY(0);',
+      '}',
+      '@media print {',
+      '  .review-toggle-btn { display: none; }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(style);
+
+    var cfg = window.GLINDA_CONTACT_CONFIG || {};
+    var labels = (cfg && cfg.REVIEW_LABELS) || {};
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'review-toggle-btn';
+    btn.setAttribute('data-review-skip', '');
+    btn.textContent = labels.toggleButton || 'Comments';
+    btn.title = labels.toggleButtonTitle || 'Open comment review mode';
+    btn.addEventListener('click', function () {
+      var url = new URL(window.location.href);
+      url.searchParams.set('review', '1');
+      window.location.href = url.toString();
+    });
+    document.body.appendChild(btn);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', injectEntryButton);
+  } else {
+    injectEntryButton();
+  }
+
+  // ----- (2) Widget activation (only when ?review=1) -----
+  if (!reviewActive) {
     return;
   }
 

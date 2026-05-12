@@ -51,6 +51,13 @@ window.GLINDA_CONTACT_CONFIG = {
   REVIEW_LABELS: {
     locale: "en",
 
+    // Toggle controls (per inert-entry-button.md + components/toggle-button.md)
+    // Shared label set: the inert-page entry button (bottom-right floating
+    // pill) AND the mobile sidebar-collapse toggle use the same label keys
+    // for cross-surface consistency.
+    toggleButton: "Comments",
+    toggleButtonTitle: "Open comment review mode",
+
     // Banner — context-specific (this is the Glinda Method site)
     bannerText: "Reviewing the Glinda Method",
     bannerHint: "Hover any paragraph to leave a comment.",
