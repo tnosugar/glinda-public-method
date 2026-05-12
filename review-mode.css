@@ -1,0 +1,769 @@
+/* public/method/review-mode.css
+ *
+ * Composed 2026-05-10 from library/features/review-widget/.
+ * Theme: default (pinned). Per-token overrides from brand/design-tokens/.
+ * See .composition-manifest.md alongside this file for the full provenance.
+ *
+ * Scope: every rule is gated by html[data-review-mode="on"] so the
+ * stylesheet is inert when the widget isn't activated. Bootstrap sets
+ * the attribute only after ?review=1 is detected and main module loads.
+ *
+ * Source-of-truth: do NOT hand-edit. Re-compose by re-running the
+ * library/features/review-widget composition session. Hand-edits should
+ * be recorded in .claude/variations/review-widget.md so a re-compose
+ * knows to preserve or codify them upstream.
+ */
+
+/* =====================================================================
+ * Design tokens (resolved at composition; values come from
+ * brand/design-tokens/ overlaid on themes/default/ overlaid on
+ * library/design/ defaults).
+ * ===================================================================== */
+
+html[data-review-mode="on"] {
+  /* Colors — Glinda overrides */
+  --rv-primary-deep: #8705E4;
+  --rv-accent-warm: #FF8B5C;
+  --rv-accent-cool: #53DEFF;
+  --rv-feedback-amber: #FFC857;
+  --rv-feedback-red: #E63946;
+  --rv-neutral-deep: #01055E;
+  --rv-surface-base: #FFFFFF;
+  --rv-surface-overlay: rgba(1, 5, 94, 0.5);
+
+  /* Derived utility colors */
+  --rv-amber-tint: rgba(255, 200, 87, 0.18);
+  --rv-cool-tint: rgba(83, 222, 255, 0.15);
+  --rv-warm-tint: rgba(255, 139, 92, 0.15);
+  --rv-text-muted: #434343;
+  --rv-border-soft: rgba(1, 5, 94, 0.12);
+
+  /* Typography — library defaults */
+  --rv-font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --rv-fs-meta: 0.6875rem;
+  --rv-fs-small: 0.75rem;
+  --rv-fs-body: 0.875rem;
+  --rv-fs-label: 1rem;
+  --rv-fs-title: 1.125rem;
+  --rv-fs-heading: 1.25rem;
+
+  /* Spacing — library defaults */
+  --rv-sp-xs: 0.25rem;
+  --rv-sp-sm: 0.5rem;
+  --rv-sp-md: 0.75rem;
+  --rv-sp-lg: 1rem;
+  --rv-sp-xl: 1.5rem;
+  --rv-sp-xxl: 2rem;
+
+  /* Layout */
+  --rv-z-banner: 9999;
+  --rv-z-sidebar: 9998;
+  --rv-z-toggle: 9997;
+  --rv-z-modal: 10001;
+  --rv-z-toast: 10002;
+  --rv-banner-height: 40px;
+  --rv-sidebar-width: 360px;
+}
+
+/* Push body content down so the page's own header/nav doesn't get hidden behind the banner. */
+html[data-review-mode="on"] body {
+  padding-top: var(--rv-banner-height);
+}
+
+/* =====================================================================
+ * Anchored elements — every element matching the anchor TAG list (set
+ * via JS) gets a subtle default outline, plus a spotlight class when a
+ * sidebar row is clicked.
+ *
+ * Per features.review-widget.spotlight-on-click: a default low-alpha
+ * dashed outline always sits on has-comment elements; the spotlight
+ * class adds the bold solid outline + expanding ring on click only.
+ * ===================================================================== */
+
+html[data-review-mode="on"] [data-comment-id] {
+  position: relative;
+}
+
+html[data-review-mode="on"] [data-comment-id][data-has-comments="true"] {
+  outline: 1px dashed rgba(135, 5, 228, 0.2);
+  outline-offset: 4px;
+}
+
+html[data-review-mode="on"] [data-comment-id].rv-spotlight {
+  outline: 3px solid var(--rv-accent-warm);
+  outline-offset: 6px;
+  animation: rv-spotlight-pulse 4s cubic-bezier(0.4, 0, 0.2, 1) 1;
+}
+
+@keyframes rv-spotlight-pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--rv-accent-warm);
+  }
+  100% {
+    box-shadow: 0 0 0 12px rgba(255, 139, 92, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-review-mode="on"] [data-comment-id].rv-spotlight {
+    animation: none;
+  }
+}
+
+/* =====================================================================
+ * Pill — action variant (hover-revealed "Add comment")
+ * Per features.review-widget.pill-hover-deepest: visible only on the
+ * deepest hovered anchored element.
+ * ===================================================================== */
+
+html[data-review-mode="on"] .rv-pill-host {
+  position: absolute;
+  top: 0;
+  right: -8px;
+  transform: translate(100%, -25%);
+  pointer-events: none;
+  z-index: 10;
+}
+
+html[data-review-mode="on"] .rv-pill {
+  display: none;
+  font-family: var(--rv-font-sans);
+  font-size: var(--rv-fs-small);
+  font-weight: 600;
+  line-height: 1;
+  padding: var(--rv-sp-xs) var(--rv-sp-sm);
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  background: var(--rv-accent-warm);
+  color: var(--rv-surface-base);
+  pointer-events: auto;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(1, 5, 94, 0.18);
+  transition: transform 0.1s ease-out;
+}
+
+html[data-review-mode="on"] .rv-pill:hover {
+  transform: translateY(-1px);
+}
+
+html[data-review-mode="on"] .rv-pill:focus-visible {
+  outline: 2px solid var(--rv-primary-deep);
+  outline-offset: 2px;
+}
+
+/* Deepest-only: pill visible only when the host is hovered AND has no
+ * descendants currently hovered. The :has() selector is the deepest-only
+ * mechanism (Chrome/Edge ≥105, Firefox ≥121, Safari ≥15.4). */
+html[data-review-mode="on"] [data-comment-id]:hover:not(:has([data-comment-id]:hover)) > .rv-pill-host > .rv-pill,
+html[data-review-mode="on"] [data-comment-id]:hover:not(:has([data-comment-id]:hover)) .rv-pill-host > .rv-pill {
+  display: inline-block;
+}
+
+/* =====================================================================
+ * Pill — status variants (pending / done) in sidebar group headers
+ * ===================================================================== */
+
+html[data-review-mode="on"] .rv-pill-status {
+  display: inline-block;
+  font-family: var(--rv-font-sans);
+  font-size: var(--rv-fs-small);
+  font-weight: 600;
+  line-height: 1;
+  padding: var(--rv-sp-xs) var(--rv-sp-sm);
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+html[data-review-mode="on"] .rv-pill-status[data-variant="status-pending"] {
+  background: var(--rv-amber-tint);
+  color: var(--rv-neutral-deep);
+}
+
+html[data-review-mode="on"] .rv-pill-status[data-variant="status-done"] {
+  background: var(--rv-cool-tint);
+  color: var(--rv-neutral-deep);
+}
+
+/* =====================================================================
+ * Banner (component: banner) — fixed top strip, primary-deep background
+ * ===================================================================== */
+
+html[data-review-mode="on"] .rv-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--rv-banner-height);
+  background: var(--rv-primary-deep);
+  color: var(--rv-surface-base);
+  font-family: var(--rv-font-sans);
+  z-index: var(--rv-z-banner);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--rv-sp-lg);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+}
+
+html[data-review-mode="on"] .rv-banner-text {
+  font-size: var(--rv-fs-heading);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+html[data-review-mode="on"] .rv-banner-hint {
+  font-size: var(--rv-fs-body);
+  font-weight: 400;
+  opacity: 0.85;
+  margin-left: var(--rv-sp-md);
+}
+
+html[data-review-mode="on"] .rv-banner-close {
+  background: transparent;
+  color: var(--rv-surface-base);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
+  padding: var(--rv-sp-xs) var(--rv-sp-md);
+  font-family: var(--rv-font-sans);
+  font-size: var(--rv-fs-small);
+  cursor: pointer;
+}
+
+html[data-review-mode="on"] .rv-banner-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+html[data-review-mode="on"] .rv-banner-close:focus-visible {
+  outline: 2px solid var(--rv-accent-cool);
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  html[data-review-mode="on"] .rv-banner-hint { display: none; }
+}
+
+/* =====================================================================
+ * Sidebar drawer (component: sidebar-drawer)
+ * ===================================================================== */
+
+html[data-review-mode="on"] .rv-sidebar {
+  position: fixed;
+  top: var(--rv-banner-height);
+  right: 0;
+  width: var(--rv-sidebar-width);
+  height: calc(100vh - var(--rv-banner-height));
+  background: var(--rv-surface-base);
+  color: var(--rv-neutral-deep);
+  font-family: var(--rv-font-sans);
+  z-index: var(--rv-z-sidebar);
+  box-shadow: -2px 0 12px rgba(1, 5, 94, 0.08);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(0);
+  transition: transform 0.18s ease-out;
+}
+
+html[data-review-mode="on"] .rv-sidebar[data-open="false"] {
+  transform: translateX(100%);
+}
+
+/* Auto-collapse below the sidebar-collapse breakpoint */
+@media (max-width: 800px) {
+  html[data-review-mode="on"] .rv-sidebar {
+    transform: translateX(100%);
+  }
+  html[data-review-mode="on"] .rv-sidebar[data-open="true"] {
+    transform: translateX(0);
+  }
+}
+
+html[data-review-mode="on"] .rv-sidebar-header {
+  padding: var(--rv-sp-lg) var(--rv-sp-xl) var(--rv-sp-md);
+  border-bottom: 1px solid var(--rv-border-soft);
+}
+
+html[data-review-mode="on"] .rv-sidebar-title {
+  font-size: var(--rv-fs-title);
+  font-weight: 600;
+  margin: 0 0 var(--rv-sp-md);
+  color: var(--rv-neutral-deep);
+}
+
+html[data-review-mode="on"] .rv-sidebar-filters {
+  display: flex;
+  gap: var(--rv-sp-sm);
+}
+
+html[data-review-mode="on"] .rv-filter-tab {
+  background: transparent;
+  color: var(--rv-text-muted);
+  border: 1px solid var(--rv-border-soft);
+  border-radius: 4px;
+  padding: var(--rv-sp-xs) var(--rv-sp-md);
+  font-family: var(--rv-font-sans);
+  font-size: var(--rv-fs-small);
+  cursor: pointer;
+}
+
+html[data-review-mode="on"] .rv-filter-tab[aria-pressed="true"] {
+  background: var(--rv-primary-deep);
+  color: var(--rv-surface-base);
+  border-color: var(--rv-primary-deep);
+}
+
+html[data-review-mode="on"] .rv-filter-tab:focus-visible {
+  outline: 2px solid var(--rv-accent-warm);
+  outline-offset: 2px;
+}
+
+html[data-review-mode="on"] .rv-sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--rv-sp-md) 0;
+}
+
+html[data-review-mode="on"] .rv-sidebar-empty {
+  padding: var(--rv-sp-xl);
+  color: var(--rv-text-muted);
+  font-size: var(--rv-fs-body);
+  text-align: center;
+  font-style: italic;
+}
+
+/* Comment groups */
+html[data-review-mode="on"] .rv-group {
+  border-bottom: 1px solid var(--rv-border-soft);
+}
+
+html[data-review-mode="on"] .rv-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--rv-sp-md) var(--rv-sp-xl) var(--rv-sp-sm);
+  gap: var(--rv-sp-sm);
+}
+
+html[data-review-mode="on"] .rv-group-anchor {
+  font-family: var(--rv-font-sans);
+  font-size: var(--rv-fs-meta);
+  color: var(--rv-text-muted);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+html[data-review-mode="on"] .rv-group-preview {
+  font-size: var(--rv-fs-body);
+  color: var(--rv-neutral-deep);
+  padding: 0 var(--rv-sp-xl);
+  margin: 0 0 var(--rv-sp-sm);
+  line-height: 1.4;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+html[data-review-mode="on"] .rv-group-rows {
+  padding: 0;
+  list-style: none;
+  margin: 0;
+}
+
+html[data-review-mode="on"] .rv-row {
+  padding: var(--rv-sp-md) var(--rv-sp-xl);
+  cursor: pointer;
+  border-top: 1px solid var(--rv-border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: var(--rv-sp-sm);
+}
+
+html[data-review-mode="on"] .rv-row:hover {
+  background: rgba(135, 5, 228, 0.04);
+}
+
+html[data-review-mode="on"] .rv-row:focus-within {
+  background: rgba(135, 5, 228, 0.06);
+}
+
+html[data-review-mode="on"] .rv-row-text {
+  font-size: var(--rv-fs-body);
+  color: var(--rv-neutral-deep);
+  line-height: 1.5;
+  margin: 0;
+}
+
+html[data-review-mode="on"] .rv-row-replacement {
+  font-size: var(--rv-fs-body);
+  color: var(--rv-text-muted);
+  line-height: 1.45;
+  margin: 0;
+  padding: var(--rv-sp-sm);
+  background: var(--rv-cool-tint);
+  border-radius: 4px;
+  border-left: 2px solid var(--rv-accent-cool);
+}
+
+html[data-review-mode="on"] .rv-row-meta {
+  font-size: var(--rv-fs-meta);
+  color: var(--rv-text-muted);
+  display: flex;
+  gap: var(--rv-sp-md);
+}
+
+html[data-review-mode="on"] .rv-row-actions {
+  display: flex;
+  gap: var(--rv-sp-xs);
+  margin-top: var(--rv-sp-xs);
+}
+
+html[data-review-mode="on"] .rv-row-action {
+  background: transparent;
+  color: var(--rv-primary-deep);
+  border: 1px solid var(--rv-border-soft);
+  border-radius: 4px;
+  padding: var(--rv-sp-xs) var(--rv-sp-sm);
+  font-family: var(--rv-font-sans);
+  font-size: var(--rv-fs-small);
+  cursor: pointer;
+}
+
+html[data-review-mode="on"] .rv-row-action:hover {
+  background: rgba(135, 5, 228, 0.06);
+}
+
+html[data-review-mode="on"] .rv-row-action[data-variant="danger"] {
+  color: var(--rv-feedback-red);
+}
+
+html[data-review-mode="on"] .rv-row-action[data-variant="danger"]:hover {
+  background: rgba(230, 57, 70, 0.08);
+}
+
+html[data-review-mode="on"] .rv-row-action:focus-visible {
+  outline: 2px solid var(--rv-accent-warm);
+  outline-offset: 1px;
+}
+
+/* Group bulk archive button */
+html[data-review-mode="on"] .rv-group-bulk {
+  padding: var(--rv-sp-sm) var(--rv-sp-xl) var(--rv-sp-md);
+}
+
+html[data-review-mode="on"] .rv-group-bulk-button {
+  background: transparent;
+  color: var(--rv-text-muted);
+  border: 1px solid var(--rv-border-soft);
+  border-radius: 4px;
+  padding: var(--rv-sp-xs) var(--rv-sp-md);
+  font-family: var(--rv-font-sans);
+  font-size: var(--rv-fs-small);
+  cursor: pointer;
+}
+
+html[data-review-mode="on"] .rv-group-bulk-button:hover {
+  background: rgba(1, 5, 94, 0.04);
+}
+
+/* =====================================================================
+ * Toggle button (component: toggle-button) — floating, visible only
+ * when the sidebar is collapsed
+ * ===================================================================== */
+
+html[data-review-mode="on"] .rv-toggle {
+  position: fixed;
+  bottom: var(--rv-sp-lg);
+  right: var(--rv-sp-lg);
+  background: var(--rv-primary-deep);
+  color: var(--rv-surface-base);
+  border: none;
+  border-radius: 9999px;
+  padding: var(--rv-sp-md) var(--rv-sp-lg);
+  font-family: var(--rv-font-sans);
+  font-size: var(--rv-fs-label);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(1, 5, 94, 0.22);
+  z-index: var(--rv-z-toggle);
+  display: none;
+}
+
+html[data-review-mode="on"] .rv-toggle[aria-pressed="false"] {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rv-sp-sm);
+}
+
+html[data-review-mode="on"] .rv-toggle-count {
+  background: var(--rv-accent-warm);
+  color: var(--rv-surface-base);
+  padding: var(--rv-sp-xs) var(--rv-sp-sm);
+  border-radius: 9999px;
+  font-size: var(--rv-fs-small);
+  min-width: 22px;
+  text-align: center;
+}
+
+html[data-review-mode="on"] .rv-toggle:focus-visible {
+  outline: 2px solid var(--rv-accent-cool);
+  outline-offset: 3px;
+}
+
+/* Above the sidebar-collapse breakpoint, sidebar is visible by default,
+ * so toggle is hidden unless the user explicitly closes the sidebar. */
+@media (min-width: 801px) {
+  html[data-review-mode="on"] .rv-toggle {
+    display: none;
+  }
+  html[data-review-mode="on"] .rv-sidebar[data-open="false"] ~ .rv-toggle[aria-pressed="false"] {
+    display: inline-flex;
+  }
+}
+
+/* =====================================================================
+ * Modal shell (component: modal-shell) + composer (comment-lifecycle)
+ * ===================================================================== */
+
+html[data-review-mode="on"] .rv-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--rv-surface-overlay);
+  z-index: var(--rv-z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--rv-sp-lg);
+}
+
+html[data-review-mode="on"] .rv-modal {
+  background: var(--rv-surface-base);
+  color: var(--rv-neutral-deep);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 480px;
+  max-height: calc(100vh - 4rem);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 16px 48px rgba(1, 5, 94, 0.25);
+}
+
+html[data-review-mode="on"] .rv-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--rv-sp-lg) var(--rv-sp-xl);
+  border-bottom: 1px solid var(--rv-border-soft);
+}
+
+html[data-review-mode="on"] .rv-modal-title {
+  font-size: var(--rv-fs-title);
+  font-weight: 600;
+  margin: 0;
+}
+
+html[data-review-mode="on"] .rv-modal-close {
+  background: transparent;
+  color: var(--rv-text-muted);
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: var(--rv-sp-xs) var(--rv-sp-sm);
+}
+
+html[data-review-mode="on"] .rv-modal-body {
+  padding: var(--rv-sp-xl);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rv-sp-lg);
+}
+
+html[data-review-mode="on"] .rv-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rv-sp-xs);
+}
+
+html[data-review-mode="on"] .rv-field-label {
+  font-size: var(--rv-fs-label);
+  font-weight: 600;
+  color: var(--rv-neutral-deep);
+}
+
+html[data-review-mode="on"] .rv-field-hint {
+  font-size: var(--rv-fs-small);
+  color: var(--rv-text-muted);
+  font-style: italic;
+}
+
+html[data-review-mode="on"] .rv-field-input {
+  font-family: var(--rv-font-sans);
+  font-size: var(--rv-fs-label);
+  color: var(--rv-neutral-deep);
+  background: var(--rv-surface-base);
+  border: 1px solid var(--rv-border-soft);
+  border-radius: 4px;
+  padding: var(--rv-sp-md);
+  resize: vertical;
+  min-height: 4.5rem;
+  line-height: 1.5;
+}
+
+html[data-review-mode="on"] .rv-field-input:focus-visible {
+  outline: 2px solid var(--rv-primary-deep);
+  outline-offset: 0;
+  border-color: var(--rv-primary-deep);
+}
+
+html[data-review-mode="on"] .rv-modal-error {
+  font-size: var(--rv-fs-body);
+  color: var(--rv-feedback-red);
+  background: rgba(230, 57, 70, 0.08);
+  padding: var(--rv-sp-sm) var(--rv-sp-md);
+  border-radius: 4px;
+  display: none;
+}
+
+html[data-review-mode="on"] .rv-modal-error[data-shown="true"] {
+  display: block;
+}
+
+html[data-review-mode="on"] .rv-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--rv-sp-sm);
+  padding: var(--rv-sp-lg) var(--rv-sp-xl);
+  border-top: 1px solid var(--rv-border-soft);
+}
+
+/* Button component — primary / secondary / danger */
+html[data-review-mode="on"] .rv-button {
+  font-family: var(--rv-font-sans);
+  font-size: var(--rv-fs-label);
+  font-weight: 600;
+  padding: var(--rv-sp-sm) var(--rv-sp-lg);
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  line-height: 1;
+}
+
+html[data-review-mode="on"] .rv-button[data-variant="primary"] {
+  background: var(--rv-primary-deep);
+  color: var(--rv-surface-base);
+  border-color: var(--rv-primary-deep);
+}
+
+html[data-review-mode="on"] .rv-button[data-variant="primary"]:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+html[data-review-mode="on"] .rv-button[data-variant="secondary"] {
+  background: var(--rv-surface-base);
+  color: var(--rv-neutral-deep);
+  border-color: var(--rv-border-soft);
+}
+
+html[data-review-mode="on"] .rv-button[data-variant="secondary"]:hover:not(:disabled) {
+  background: rgba(1, 5, 94, 0.04);
+}
+
+html[data-review-mode="on"] .rv-button[data-variant="danger"] {
+  background: var(--rv-surface-base);
+  color: var(--rv-feedback-red);
+  border-color: var(--rv-feedback-red);
+}
+
+html[data-review-mode="on"] .rv-button[data-variant="danger"]:hover:not(:disabled) {
+  background: rgba(230, 57, 70, 0.08);
+}
+
+html[data-review-mode="on"] .rv-button:disabled,
+html[data-review-mode="on"] .rv-button[aria-busy="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+html[data-review-mode="on"] .rv-button:focus-visible {
+  outline: 2px solid var(--rv-accent-warm);
+  outline-offset: 2px;
+}
+
+/* =====================================================================
+ * Toast (component: toast) — bottom-right stack, three variants
+ * ===================================================================== */
+
+html[data-review-mode="on"] .rv-toast-stack {
+  position: fixed;
+  bottom: calc(var(--rv-sp-lg) + 60px);
+  right: var(--rv-sp-lg);
+  z-index: var(--rv-z-toast);
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--rv-sp-sm);
+  pointer-events: none;
+}
+
+html[data-review-mode="on"] .rv-toast {
+  pointer-events: auto;
+  background: var(--rv-surface-base);
+  color: var(--rv-neutral-deep);
+  font-family: var(--rv-font-sans);
+  font-size: var(--rv-fs-body);
+  padding: var(--rv-sp-md) var(--rv-sp-lg);
+  border-radius: 4px;
+  border-left: 4px solid var(--rv-accent-cool);
+  min-width: 220px;
+  max-width: 360px;
+  box-shadow: 0 8px 24px rgba(1, 5, 94, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rv-sp-md);
+  animation: rv-toast-in 0.18s ease-out;
+}
+
+@keyframes rv-toast-in {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+html[data-review-mode="on"] .rv-toast[data-variant="error"] {
+  border-left-color: var(--rv-feedback-red);
+}
+
+html[data-review-mode="on"] .rv-toast[data-variant="info"] {
+  border-left-color: var(--rv-text-muted);
+}
+
+html[data-review-mode="on"] .rv-toast-close {
+  background: transparent;
+  color: var(--rv-text-muted);
+  border: none;
+  font-size: 1.125rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 var(--rv-sp-xs);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-review-mode="on"] .rv-toast {
+    animation: none;
+  }
+}
+
+/* =====================================================================
+ * Footer signature inside sidebar — Glinda house signature per
+ * .claude/variations/voice-md-shape.md
+ * ===================================================================== */
+
+html[data-review-mode="on"] .rv-sidebar-footer {
+  padding: var(--rv-sp-md) var(--rv-sp-xl);
+  border-top: 1px solid var(--rv-border-soft);
+  font-family: var(--rv-font-sans);
+  font-size: var(--rv-fs-small);
+  color: var(--rv-primary-deep);
+  font-style: italic;
+  text-align: center;
+}
