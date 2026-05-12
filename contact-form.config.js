@@ -32,6 +32,40 @@
 window.GLINDA_CONTACT_CONFIG = {
 
   // ============================================================
+  // commentLifecycleMode — 'full' | 'feedback-only'
+  // ============================================================
+  // Per library/features/review-widget/comment-lifecycle.md §"Per-comment
+  // actions in the sidebar". 'feedback-only' trims the in-UI button set so
+  // reviewers leave comments (status: pending) and Claude / operator works
+  // the RTDB directly to set status: applied or archived. The UI exposes
+  // Edit + Delete on pending, Restore + Delete on applied/archived. The
+  // group-footer bulk-archive button is suppressed in feedback-only mode.
+  //
+  // 2026-05-14: previously a glinda variation maintained via local fork of
+  // renderComment() + renderGroup(); now canonical per upstream PR.
+  commentLifecycleMode: 'feedback-only',
+
+  // ============================================================
+  // ANCHOR_TAGS_EXTRA — additional tags to anchor beyond the canonical list
+  // ============================================================
+  // Per library/features/review-widget/anchor-extensibility.md
+  // §"ANCHOR_TAGS_EXTRA — project-level tag-list extension". These five
+  // additions cover glinda's LP / testimonial surfaces:
+  //   - label       form-field labels (LP contact form)
+  //   - blockquote  testimonial quote bodies
+  //   - cite        testimonial attributions
+  //   - figcaption  figure captions (any future image+caption surfaces)
+  //   - button      CTA buttons — reviewers comment on copy
+  //
+  // Anti-pattern: never put 'div' here (every container becomes anchorable,
+  // UX collapses). Use the per-element [data-comment-target] attribute on
+  // specific wrapper divs in index.html instead.
+  //
+  // 2026-05-14: previously a glinda variation maintained via local fork
+  // of ANCHOR_TAGS; now canonical per upstream PR.
+  ANCHOR_TAGS_EXTRA: ['label', 'blockquote', 'cite', 'figcaption', 'button'],
+
+  // ============================================================
   // FIREBASE_CONFIG — glinda-website project (provisioned 2026-05-13)
   // ============================================================
   // Realtime Database paths:

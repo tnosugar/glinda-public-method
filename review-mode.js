@@ -112,18 +112,23 @@ const state = {
 // on. The chrome-exclusion logic in isInChrome() still skips the widget's
 // own elements; this is additive only.
 // See .claude/variations/review-widget.md §"Expanded anchor-tag list".
+// Canonical anchor list per library/features/review-widget/anchor-strategy.md.
+// Project-level extensions live in {PROJECT}_CONTACT_CONFIG.ANCHOR_TAGS_EXTRA
+// (per anchor-extensibility.md) — for glinda, see contact-form.config.js
+// (label, blockquote, cite, figcaption, button for LP / testimonial surfaces).
 const ANCHOR_TAGS = [
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
   'p', 'li', 'td', 'th', 'dt', 'dd',
   'strong', 'em', 'small', 'span',
-  'section', 'article', 'aside', 'header', 'footer', 'nav', 'main', 'figure',
-  // Glinda additions (2026-05-13):
-  'label',         // form-field labels
-  'blockquote',    // testimonial quote bodies
-  'cite',          // testimonial attributions
-  'figcaption',    // figure captions
-  'button'         // CTAs — reviewers comment on button copy
+  'section', 'article', 'aside', 'header', 'footer', 'nav', 'main', 'figure'
 ];
+
+// Module-scoped per-tag counter. Sticky across the init anchor pass AND
+// MutationObserver-driven subtree anchor passes — so dynamic content added
+// after init gets continuation IDs (e.g., the 6th <p> = p-6) without
+// re-numbering anchors p-1 through p-5 that already have comments attached.
+// See library/features/review-widget/anchor-extensibility.md §"Counter stickiness".
+const anchorCounters = Object.create(null);
 
 function derivePageSlug() {
   let path = window.location.pathname || '/';
@@ -141,43 +146,107 @@ function isInChrome(el) {
   return !!el.closest('nav, header[role="banner"], footer, .review-banner, .review-sidebar, .review-sidebar-toggle, .review-modal-backdrop, .review-toast');
 }
 
-function anchorPage() {
-  const root = selectContentArea();
-  const counters = Object.create(null);
+// Effective anchor list = canonical ANCHOR_TAGS + project ANCHOR_TAGS_EXTRA.
+// Read from config at init via state.cfg.ANCHOR_TAGS_EXTRA. See
+// library/features/review-widget/anchor-extensibility.md.
+function getEffectiveAnchorTags() {
+  const extra = (state.cfg && Array.isArray(state.cfg.ANCHOR_TAGS_EXTRA))
+    ? state.cfg.ANCHOR_TAGS_EXTRA : [];
+  return ANCHOR_TAGS.concat(extra);
+}
 
-  for (const tag of ANCHOR_TAGS) {
-    const nodes = root.querySelectorAll(tag);
-    nodes.forEach((el) => {
-      if (isInChrome(el)) return;
-      const text = (el.textContent || '').trim();
-      if (text.length < 2) return;
+// Assigns a data-comment-id and injects the pill container/host for a
+// single element. Sticky-counter-aware (uses module-scoped anchorCounters).
+// Dedupes: returns early if the element already carries data-comment-id.
+function tryAnchor(el, tag) {
+  if (!el || isInChrome(el)) return false;
+  if (el.hasAttribute('data-comment-id')) return false;
+  const text = (el.textContent || '').trim();
+  if (text.length < 2) return false;
 
-      counters[tag] = (counters[tag] || 0) + 1;
-      const n = counters[tag];
-      const id = `${state.pageSlug}-${tag}-${n}`;
-      el.setAttribute('data-comment-id', id);
+  anchorCounters[tag] = (anchorCounters[tag] || 0) + 1;
+  const n = anchorCounters[tag];
+  const id = `${state.pageSlug}-${tag}-${n}`;
+  el.setAttribute('data-comment-id', id);
 
-      if (!el.querySelector(':scope > .review-pill-container')) {
-        const host = document.createElement('span');
-        host.className = 'review-pill-container';
-        const pill = document.createElement('button');
-        pill.className = 'review-pill';
-        pill.type = 'button';
-        pill.textContent = '+';
-        pill.setAttribute('aria-label', state.LABELS.modalTitleNew);
-        pill.title = state.LABELS.modalTitleNew;
-        pill.addEventListener('click', (ev) => {
-          ev.preventDefault();
-          ev.stopPropagation();
-          openComposerNew(id);
-        });
-        host.appendChild(pill);
-        el.appendChild(host);
-      }
+  if (!el.querySelector(':scope > .review-pill-container')) {
+    const host = document.createElement('span');
+    host.className = 'review-pill-container';
+    const pill = document.createElement('button');
+    pill.className = 'review-pill';
+    pill.type = 'button';
+    pill.textContent = '+';
+    pill.setAttribute('aria-label', state.LABELS.modalTitleNew);
+    pill.title = state.LABELS.modalTitleNew;
+    pill.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      openComposerNew(id);
+    });
+    host.appendChild(pill);
+    el.appendChild(host);
+  }
+  return true;
+}
+
+// Anchor a subtree rooted at `rootNode` — used by both the initial
+// anchorPage() pass and the MutationObserver dynamic-content path.
+// Two passes per subtree: (1) effective tag list, (2) [data-comment-target] opt-ins.
+// Per anchor-extensibility.md §"The three mechanisms".
+function anchorSubtree(rootNode) {
+  if (!rootNode || rootNode.nodeType !== Node.ELEMENT_NODE) return 0;
+  let anchored = 0;
+  const tags = getEffectiveAnchorTags();
+
+  for (const tag of tags) {
+    if (rootNode.tagName && rootNode.tagName.toLowerCase() === tag) {
+      if (tryAnchor(rootNode, tag)) anchored++;
+    }
+    rootNode.querySelectorAll(tag).forEach((el) => {
+      if (tryAnchor(el, tag)) anchored++;
     });
   }
 
-  return Object.values(counters).reduce((a, b) => a + b, 0);
+  // Per-element opt-in via [data-comment-target] — dedupes against the
+  // tag-list pass via the data-comment-id check inside tryAnchor().
+  if (rootNode.matches && rootNode.matches('[data-comment-target]')) {
+    if (tryAnchor(rootNode, rootNode.tagName.toLowerCase())) anchored++;
+  }
+  rootNode.querySelectorAll('[data-comment-target]').forEach((el) => {
+    if (tryAnchor(el, el.tagName.toLowerCase())) anchored++;
+  });
+
+  return anchored;
+}
+
+function anchorPage() {
+  return anchorSubtree(selectContentArea());
+}
+
+// MutationObserver for dynamic content — lazy-loaded sections, Load-More
+// feeds, SPA route changes. Scoped to the content area; never observes
+// document.body. Per library/features/review-widget/anchor-extensibility.md
+// §"MutationObserver — dynamic-content support".
+function setupDynamicAnchoring() {
+  const root = selectContentArea();
+  const observer = new MutationObserver((mutations) => {
+    for (const mut of mutations) {
+      for (const node of mut.addedNodes) {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          anchorSubtree(node);
+        }
+      }
+    }
+  });
+  observer.observe(root, { childList: true, subtree: true });
+  state.anchorObserver = observer;
+}
+
+function teardownDynamicAnchoring() {
+  if (state.anchorObserver) {
+    state.anchorObserver.disconnect();
+    state.anchorObserver = null;
+  }
 }
 
 // ============================================================
@@ -484,9 +553,24 @@ function renderGroup(anchorId, comments) {
     groupEl.appendChild(renderComment(c));
   }
 
-  // Glinda variation (2026-05-13): group-footer bulk-archive removed.
-  // Archiving is Claude/operator-driven via RTDB write, not a UI action.
-  // See .claude/variations/review-widget.md §"Feedback-only button set".
+  // Bulk-archive footer per library/features/review-widget/pending-archived-workflow.md
+  // §"Composition responsibilities". Visible only when the group is in the
+  // 'active' filter tab (has pending comments) AND the project is in 'full'
+  // lifecycle mode. In 'feedback-only' mode the button is suppressed because
+  // transitions happen via the agent reading RTDB, not via UI clicks.
+  const isFeedbackOnly = state.lifecycleMode === 'feedback-only';
+  if (!isFeedbackOnly && status === 'active') {
+    const pendingIds = comments.filter((c) => c.status === 'pending').map((c) => c.id);
+    if (pendingIds.length > 0) {
+      const footer = el('div', { class: 'review-group-footer' },
+        el('button', {
+          class: 'archive-group-btn', type: 'button', text: state.LABELS.archiveGroupLabel,
+          on: { click: (ev) => { ev.stopPropagation(); bulkArchive(pendingIds); } }
+        })
+      );
+      groupEl.appendChild(footer);
+    }
+  }
 
   return groupEl;
 }
@@ -495,19 +579,44 @@ function renderComment(c) {
   const statusClass = c.status === 'applied' ? ' applied' : (c.status === 'archived' ? ' archived' : '');
 
   const actions = el('div', { class: 'actions' });
+  const isFeedbackOnly = state.lifecycleMode === 'feedback-only';
 
-  // Glinda variation (2026-05-13): feedback-only button set.
-  // Apply + Archive transitions happen via Claude / operator working the
-  // RTDB directly, not via UI buttons. Editing only makes sense in the
-  // active state (restore first if you want to edit a non-active comment).
-  // See .claude/variations/review-widget.md §"Feedback-only button set".
+  // Button set per library/features/review-widget/comment-lifecycle.md
+  // §"Per-comment actions in the sidebar". Default 'full' mode emits Apply
+  // / Edit / Archive on pending, Restore / Archive on applied, Restore on
+  // archived — all alongside Delete. 'feedback-only' mode trims to
+  // Edit / Delete on pending and Restore / Delete on applied/archived
+  // (transitions happen via Claude / operator working the RTDB directly).
   if (c.status === 'pending') {
+    if (!isFeedbackOnly) {
+      actions.appendChild(el('button', {
+        class: 'apply-btn', type: 'button', text: state.LABELS.applyLabel,
+        on: { click: (ev) => { ev.stopPropagation(); applyComment(c.id); } }
+      }));
+    }
     actions.appendChild(el('button', {
       class: 'edit-btn', type: 'button', text: state.LABELS.editLabel,
       on: { click: (ev) => { ev.stopPropagation(); openComposerEdit(c); } }
     }));
+    if (!isFeedbackOnly) {
+      actions.appendChild(el('button', {
+        class: 'archive-btn', type: 'button', text: state.LABELS.archiveLabel,
+        on: { click: (ev) => { ev.stopPropagation(); archiveComment(c.id, 'row'); } }
+      }));
+    }
+  } else if (c.status === 'applied') {
+    actions.appendChild(el('button', {
+      class: 'restore-btn', type: 'button', text: state.LABELS.restoreLabel,
+      on: { click: (ev) => { ev.stopPropagation(); restoreComment(c.id); } }
+    }));
+    if (!isFeedbackOnly) {
+      actions.appendChild(el('button', {
+        class: 'archive-btn', type: 'button', text: state.LABELS.archiveLabel,
+        on: { click: (ev) => { ev.stopPropagation(); archiveComment(c.id, 'row'); } }
+      }));
+    }
   } else {
-    // applied OR archived: Restore is available; Edit is not (restore-first).
+    // archived: Restore + Delete in both modes
     actions.appendChild(el('button', {
       class: 'restore-btn', type: 'button', text: state.LABELS.restoreLabel,
       on: { click: (ev) => { ev.stopPropagation(); restoreComment(c.id); } }
@@ -865,6 +974,7 @@ function exitReview() {
 }
 
 window.addEventListener('pagehide', () => {
+  teardownDynamicAnchoring();
   emitEvent('review.exited', {
     pageSlug: state.pageSlug,
     exitedAt: Date.now(),
@@ -885,6 +995,12 @@ export async function init({ basePath, config, configGlobalName }) {
   if (overrides.commentsCount) state.LABELS.commentsCount = Object.assign({}, DEFAULT_LABELS.commentsCount, overrides.commentsCount);
   if (overrides.groupCount) state.LABELS.groupCount = Object.assign({}, DEFAULT_LABELS.groupCount, overrides.groupCount);
 
+  // Lifecycle mode: 'full' (default; Apply/Archive/Restore visible) or
+  // 'feedback-only' (Edit/Delete on pending, Restore/Delete on applied/archived,
+  // bulk-archive suppressed). Per comment-lifecycle.md §"Per-comment actions".
+  state.lifecycleMode = state.cfg.commentLifecycleMode === 'feedback-only'
+    ? 'feedback-only' : 'full';
+
   state.pageSlug = derivePageSlug();
   state.loadedAt = Date.now();
   state.sidebarOpen = window.innerWidth > 800;
@@ -896,6 +1012,7 @@ export async function init({ basePath, config, configGlobalName }) {
   mountToggle();
 
   const anchoredCount = anchorPage();
+  setupDynamicAnchoring();
 
   subscribeComments((initialCount) => {
     emitEvent('review.entered', {
