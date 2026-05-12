@@ -63,7 +63,46 @@ window.GLINDA_CONTACT_CONFIG = {
   //
   // 2026-05-14: previously a glinda variation maintained via local fork
   // of ANCHOR_TAGS; now canonical per upstream PR.
+  //
+  // 2026-05-15: rendered redundant in this project's config because
+  // commentableContent: 'direct-text' (below) anchors any text-bearing
+  // element regardless of tag. Keeping the key set anyway so a flip back
+  // to commentableContent: 'allowlist' would still cover glinda's surfaces.
   ANCHOR_TAGS_EXTRA: ['label', 'blockquote', 'cite', 'figcaption', 'button'],
+
+  // ============================================================
+  // commentableContent — 'allowlist' | 'direct-text'
+  // ============================================================
+  // Per library/features/review-widget/commentable-everything.md.
+  // 'allowlist' (default): iterate ANCHOR_TAGS ∪ ANCHOR_TAGS_EXTRA ∪
+  //   [data-comment-target].
+  // 'direct-text': anchor any element with direct text content >= 2 chars,
+  //   filtered by NEVER_ANCHOR deny-list (form controls, SVG internals,
+  //   void elements, etc.). Catches every text-bearing element including
+  //   <a>, <button>, <label>, custom tags — reviewer expectation that
+  //   "if there's text, I should be able to comment on it."
+  //
+  // 2026-05-15: previously a glinda variation maintained via local fork
+  // of selectContentArea() + tryAnchor(); now canonical per upstream PR.
+  commentableContent: 'direct-text',
+
+  // ============================================================
+  // chromeAnchored — boolean
+  // ============================================================
+  // Per library/features/review-widget/commentable-everything.md.
+  // true: site chrome (nav, header[role="banner"], footer) is anchored
+  //   with shared chrome-{tag}-{n} slugs (page-independent). Comments on
+  //   chrome elements write page: '__chrome__' and surface on every page.
+  // false (default): chrome skipped from anchoring.
+  //
+  // Requires chrome STRUCTURALLY IDENTICAL across pages or CHROME_COUNTERS
+  // drift causes mis-anchored comments. Glinda's LP pages share the same
+  // <nav>, <header>, <footer> markup, so this is safe.
+  //
+  // 2026-05-15: previously a glinda variation maintained via local fork
+  // of isInChrome() / selectContentArea() / tryAnchor() / write-handler /
+  // read-filter; now canonical per upstream PR.
+  chromeAnchored: true,
 
   // ============================================================
   // FIREBASE_CONFIG — glinda-website project (provisioned 2026-05-13)

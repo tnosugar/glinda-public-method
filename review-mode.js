@@ -138,13 +138,15 @@ function derivePageSlug() {
   return path.replace(/\//g, '-');
 }
 
-// Glinda variation (2026-05-14): full-body scope so site chrome (nav/header/
-// footer) is in the anchoring pass. The chrome-vs-content distinction is now
-// made by tryAnchor() based on isInSiteChrome(el), not by excluding it from
-// the content area. See .claude/variations/review-widget.md §"Commentable
-// everything — direct-text default + chrome-anchored".
+// Content area scoping — when state.chromeAnchored is true, the area is the
+// full document.body so site chrome (nav/header[role=banner]/footer) is in
+// the anchoring pass (chrome routing is then handled inside tryAnchor() via
+// isInSiteChrome). Otherwise canonical behavior: prefer <main>, fall through
+// to body. Per library/features/review-widget/anchor-strategy.md §"Content
+// area scoping" + commentable-everything.md.
 function selectContentArea() {
-  return document.body;
+  if (state.chromeAnchored) return document.body;
+  return document.querySelector('main') || document.body;
 }
 
 // Widget chrome only — the review widget's own UI elements. Site chrome
@@ -202,21 +204,35 @@ function getEffectiveAnchorTags() {
 }
 
 // Assigns a data-comment-id and injects the pill container/host for a
-// single element. New default (glinda variation 2026-05-14): anchors any
-// element with direct text content >= 2 chars, regardless of tag, with a
-// deny-list of obviously-not-anchor elements (form controls, SVG, scripts,
-// etc.). Site chrome (nav/header/footer) gets 'chrome-{tag}-{n}' slugs with
-// a separate counter so the same anchor IDs are stable across pages.
-function tryAnchor(el) {
+// single element. Two anchor-selection modes per state.commentableContent
+// (default 'allowlist', glinda runs 'direct-text'); chrome routing gated
+// by state.chromeAnchored. Full contract:
+// library/features/review-widget/commentable-everything.md.
+function tryAnchor(el, tagHint) {
   if (!el || el.nodeType !== Node.ELEMENT_NODE) return false;
-  if (isInChrome(el)) return false;                                  // widget chrome
+  if (isInChrome(el)) return false;                                  // widget chrome — always skip
   if (el.hasAttribute('data-comment-id')) return false;              // already anchored
   if (el.hasAttribute('data-review-skip')) return false;             // explicit opt-out
-  const tag = el.tagName.toLowerCase();
-  if (NEVER_ANCHOR.has(tag)) return false;                           // deny-list
-  if (!hasDirectText(el)) return false;                              // wrappers excluded
+  const tag = tagHint || el.tagName.toLowerCase();
 
+  // Mode-gated allowlist-vs-deny-list decision
+  if (state.commentableContent === 'direct-text') {
+    if (NEVER_ANCHOR.has(tag)) return false;
+    if (!hasDirectText(el)) return false;
+  } else {
+    // 'allowlist' mode (default) — per anchor-strategy.md + anchor-extensibility.md
+    const tags = getEffectiveAnchorTags();
+    const matchesTag = tags.includes(tag);
+    const optedIn = el.hasAttribute('data-comment-target');
+    if (!matchesTag && !optedIn) return false;
+    const text = (el.textContent || '').trim();
+    if (text.length < 2) return false;
+  }
+
+  // Chrome routing — gated by state.chromeAnchored (per commentable-everything.md)
   const inSiteChrome = isInSiteChrome(el);
+  if (inSiteChrome && !state.chromeAnchored) return false;
+
   let id;
   if (inSiteChrome) {
     CHROME_COUNTERS[tag] = (CHROME_COUNTERS[tag] || 0) + 1;
@@ -250,19 +266,18 @@ function tryAnchor(el) {
 
 // Anchor a subtree rooted at `rootNode` — used by both the initial
 // anchorPage() pass and the MutationObserver dynamic-content path.
-// Glinda variation (2026-05-14): walks ALL element descendants and lets
-// tryAnchor() decide via hasDirectText + deny-list, rather than iterating
-// an ANCHOR_TAGS allowlist. Catches every text-bearing element including
-// site chrome (nav/header/footer) — those get 'chrome-{tag}-{n}' slugs
-// inside tryAnchor() so comments on shared chrome elements surface
-// cross-page. See .claude/variations/review-widget.md §"Commentable
-// everything — direct-text default + chrome-anchored".
+// Walks ALL element descendants and lets tryAnchor() decide per
+// state.commentableContent ('allowlist' or 'direct-text'). The walk-all
+// approach is uniform across modes; the mode-specific filter is inside
+// tryAnchor(). Per library/features/review-widget/anchor-extensibility.md
+// + commentable-everything.md.
 function anchorSubtree(rootNode) {
   if (!rootNode || rootNode.nodeType !== Node.ELEMENT_NODE) return 0;
   let anchored = 0;
 
   // Try the root itself (only if it's not the body — body's text content
-  // would always pass hasDirectText if any text exists anywhere).
+  // would always pass hasDirectText if any text exists anywhere in 'direct-text'
+  // mode; in 'allowlist' mode body isn't in the canonical tag list).
   if (rootNode !== document.body && tryAnchor(rootNode)) anchored++;
 
   // Walk every descendant element. tryAnchor() is the gate.
@@ -1056,6 +1071,19 @@ export async function init({ basePath, config, configGlobalName }) {
   // bulk-archive suppressed). Per comment-lifecycle.md §"Per-comment actions".
   state.lifecycleMode = state.cfg.commentLifecycleMode === 'feedback-only'
     ? 'feedback-only' : 'full';
+
+  // Commentable-content mode: 'allowlist' (default; iterate ANCHOR_TAGS ∪
+  // ANCHOR_TAGS_EXTRA ∪ [data-comment-target]) or 'direct-text' (anchor any
+  // element with direct text content, filtered by NEVER_ANCHOR deny-list).
+  // Per library/features/review-widget/commentable-everything.md.
+  state.commentableContent = state.cfg.commentableContent === 'direct-text'
+    ? 'direct-text' : 'allowlist';
+
+  // Chrome-anchored: when true, site chrome (nav / header[role=banner] /
+  // footer) is anchored with shared 'chrome-{tag}-{n}' slugs; comments
+  // on chrome elements write page: '__chrome__' and surface on every page.
+  // Per library/features/review-widget/commentable-everything.md.
+  state.chromeAnchored = !!state.cfg.chromeAnchored;
 
   state.pageSlug = derivePageSlug();
   state.loadedAt = Date.now();
