@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Why do half your people seem checked out? | The Glinda Group</title>
+  <meta name="description" content="Status is unevenly distributed. Performance follows status, not seniority. We rewire who gets visibility.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="icon" type="image/png" sizes="300x300" href="../../files/favicon-300.png">
+  <link rel="icon" type="image/png" sizes="150x150" href="../../files/favicon-150.png">
+
+  <!-- Review widget — inert by default; activates only with ?review=1.
+       The review-bootstrap.js also injects a floating Comments button per
+       library/features/review-widget/inert-entry-button.md. -->
+  <script src="../../contact-form.config.js"></script>
+  <script src="../../review-bootstrap.js" defer></script>
+
+  <style>
+    /* Brand tokens — sourced from brand/ui-kit-tokens.md (canonical Glinda UI Kit) */
+    :root {
+      /* Brand colors */
+      --tgg-purple: #8705E4;
+      --tgg-purple-darker: #6804B5;   /* project-only — hover state */
+      --tgg-navy: #01055E;
+      --tgg-sky: #53DEFF;
+
+      /* Neutrals */
+      --tgg-off-white: #F5F5F5;
+      --tgg-gray: #434343;
+      --tgg-ink: #41505A;
+      --tgg-ink-muted: #7E8C9F;
+      --tgg-hairline: #CDDCDF;
+
+      /* Tints */
+      --tgg-tint-sky: #E8F5FF;
+      --tgg-tint-cream: #EFF5F7;
+
+      /* Semantic aliases */
+      --fg-1: var(--tgg-ink);
+      --fg-2: var(--tgg-ink-muted);
+      --fg-brand: var(--tgg-purple);
+      --bg-1: #fff;
+      --bg-2: var(--tgg-off-white);
+      --border-1: var(--tgg-hairline);
+
+      /* Typography */
+      --font-display: 'Space Grotesk', system-ui, sans-serif;
+      --font-body: 'Open Sans', system-ui, sans-serif;
+      --font-mono: 'Roboto Mono', ui-monospace, Menlo, monospace;
+
+      /* Motion */
+      --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+      /* Layout (project-only) */
+      --wrapper-max: 920px;
+      --section-pad-y: 4rem;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      font-weight: 400;
+      line-height: 1.55;
+      color: var(--tgg-ink);
+      background: var(--bg-1);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: var(--tgg-purple);
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+      transition: color 0.15s ease;
+    }
+    a:hover { color: var(--tgg-sky); }
+
+    .wrapper { max-width: var(--wrapper-max); margin: 0 auto; padding: 0 1.5rem; }
+
+    /* ---------- Nav ---------- */
+    nav {
+      padding: 1.25rem 0;
+      border-bottom: 1px solid var(--tgg-hairline);
+    }
+    nav .wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav a.brand {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      line-height: 0;
+    }
+    nav a.brand .brand-logo {
+      height: 36px;
+      width: auto;
+      display: block;
+      transition: opacity 0.15s var(--ease-out);
+    }
+    nav a.brand:hover .brand-logo { opacity: 0.8; }
+    nav .main-link {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--tgg-navy);
+      text-decoration: none;
+      transition: color 0.15s var(--ease-out);
+    }
+    nav .main-link:hover { color: var(--tgg-purple); }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      padding: var(--section-pad-y) 0 2.5rem;
+      text-align: left;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 700;
+      line-height: 1.15;
+      color: var(--tgg-navy);
+      margin-bottom: 1.25rem;
+    }
+    .hero p.sub {
+      font-size: 1.15rem;
+      max-width: 640px;
+      margin-bottom: 2rem;
+      color: var(--tgg-ink);
+    }
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .btn {
+      display: inline-block;
+      padding: 0.85rem 1.5rem;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: background 0.15s var(--ease-out), transform 0.15s var(--ease-out);
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .btn-primary {
+      background: var(--tgg-purple);
+      color: var(--bg-1);
+    }
+    .btn-primary:hover {
+      background: var(--tgg-purple-darker);
+      color: var(--bg-1);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--tgg-purple);
+      border-color: var(--tgg-purple);
+    }
+    .btn-secondary:hover {
+      background: var(--tgg-purple);
+      color: var(--bg-1);
+      transform: translateY(-1px);
+    }
+
+    /* ---------- Section base ---------- */
+    section { padding: 3rem 0; }
+    section.alt-bg { background: var(--tgg-tint-cream); }
+
+    h2 {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--tgg-navy);
+      margin-bottom: 1rem;
+    }
+
+    /* ---------- Symptom ---------- */
+    .symptom p.intro {
+      font-size: 1.05rem;
+      margin-bottom: 1.25rem;
+      max-width: 720px;
+    }
+    .symptom ul {
+      list-style: none;
+      max-width: 720px;
+    }
+    .symptom li {
+      padding: 0.85rem 0 0.85rem 1.5rem;
+      border-bottom: 1px solid var(--tgg-hairline);
+      position: relative;
+    }
+    .symptom li:last-child { border-bottom: none; }
+    .symptom li:before {
+      content: "—";
+      position: absolute;
+      left: 0;
+      color: var(--tgg-purple);
+      font-weight: 700;
+    }
+    .symptom li strong { color: var(--tgg-navy); }
+
+    /* ---------- Underneath ---------- */
+    .underneath p { max-width: 720px; margin-bottom: 0.75rem; }
+    .underneath .pattern-name {
+      display: inline-block;
+      font-weight: 600;
+      color: var(--tgg-navy);
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+    }
+
+    /* ---------- What we do ---------- */
+    .what-we-do .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1rem;
+    }
+    .what-we-do .card {
+      padding: 1.25rem;
+      border: 1px solid var(--tgg-hairline);
+      border-radius: 8px;
+      background: var(--bg-1);
+    }
+    .what-we-do .card h3 {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      color: var(--tgg-purple);
+      margin-bottom: 0.5rem;
+    }
+    .what-we-do .card p {
+      font-size: 0.95rem;
+      color: var(--tgg-ink);
+    }
+    .phaseware-embed { /* v2 — empty in v1 */ }
+
+    /* ---------- Outcomes ---------- */
+    .outcomes-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1.5rem;
+      margin-top: 0.5rem;
+    }
+    .outcome {
+      text-align: left;
+      padding: 0.5rem 0;
+    }
+    .outcome .number {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--tgg-purple);
+      line-height: 1.1;
+      margin-bottom: 0.35rem;
+    }
+    .outcome .label {
+      font-size: 0.9rem;
+      color: var(--tgg-ink);
+      line-height: 1.35;
+    }
+    .outcomes-caveat {
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--tgg-ink-muted);
+      font-style: italic;
+    }
+
+    /* ---------- CTA ---------- */
+    .cta-block {
+      background: var(--tgg-navy);
+      color: var(--bg-1);
+      padding: 4rem 0;
+    }
+    .cta-block h2 {
+      color: var(--bg-1);
+      font-size: 1.7rem;
+      margin-bottom: 0.75rem;
+      max-width: 640px;
+    }
+    .cta-block p.cta-line {
+      font-size: 1.05rem;
+      margin-bottom: 1.75rem;
+      max-width: 640px;
+      opacity: 0.92;
+    }
+    .cta-block .btn-secondary {
+      color: var(--bg-1);
+      border-color: var(--bg-1);
+    }
+    .cta-block .btn-secondary:hover {
+      background: var(--bg-1);
+      color: var(--tgg-navy);
+    }
+
+    /* ---------- Form ---------- */
+    .form-block { padding: 4rem 0; background: var(--tgg-tint-cream); }
+    form#lead-form {
+      max-width: 560px;
+      display: grid;
+      gap: 1rem;
+    }
+    form#lead-form label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--tgg-navy);
+      margin-bottom: 0.35rem;
+    }
+    form#lead-form input,
+    form#lead-form select,
+    form#lead-form textarea {
+      width: 100%;
+      padding: 0.7rem 0.85rem;
+      border: 1px solid var(--tgg-hairline);
+      border-radius: 5px;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      color: var(--tgg-ink);
+      background: var(--bg-1);
+    }
+    form#lead-form input:focus,
+    form#lead-form select:focus,
+    form#lead-form textarea:focus {
+      outline: none;
+      border-color: var(--tgg-purple);
+      box-shadow: 0 0 0 3px rgba(135, 5, 228, 0.15);
+    }
+    form#lead-form textarea { min-height: 100px; resize: vertical; }
+    form#lead-form button[type="submit"] {
+      justify-self: start;
+      margin-top: 0.5rem;
+    }
+    .form-status {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      padding: 0.75rem 1rem;
+      border-radius: 5px;
+      display: none;
+    }
+    .form-status.success { display: block; background: rgba(83, 222, 255, 0.12); color: var(--tgg-navy); border: 1px solid var(--tgg-sky); }
+    .form-status.error { display: block; background: rgba(230, 57, 70, 0.08); color: #b91c1c; border: 1px solid #fca5a5; }
+
+    /* ---------- Footer ---------- */
+    footer {
+      padding: 2rem 0;
+      border-top: 1px solid var(--tgg-hairline);
+      font-size: 0.85rem;
+      color: var(--tgg-ink-muted);
+    }
+    footer .signature {
+      font-family: var(--font-display);
+      color: var(--tgg-navy);
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    @media (max-width: 640px) {
+      .hero { padding: 2.5rem 0 2rem; }
+      section { padding: 2rem 0; }
+      .cta-block, .form-block { padding: 2.5rem 0; }
+    }
+
+
+    /* ---------- Client logos band ---------- */
+    .client-logos {
+      padding: 2rem 0;
+      border-top: 1px solid var(--tgg-hairline);
+      border-bottom: 1px solid var(--tgg-hairline);
+      background: var(--bg-1);
+    }
+    .client-logos .logos-eyebrow {
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--tgg-ink-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .client-logos .logos-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 2.5rem;
+    }
+    .client-logos .client-name {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--tgg-navy);
+      letter-spacing: -0.01em;
+      opacity: 0.7;
+    }
+    @media (max-width: 640px) {
+      .client-logos .logos-row { gap: 1.25rem; }
+      .client-logos .client-name { font-size: 0.95rem; }
+    }
+
+    /* ---------- Testimonials band ---------- */
+    .testimonials { background: var(--tgg-tint-cream); }
+    .testimonials h2 {
+      font-size: 1.35rem;
+      margin-bottom: 1.75rem;
+      color: var(--tgg-navy);
+    }
+    .testimonials-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .testimonials .testimonial {
+      background: var(--bg-1);
+      border: 1px solid var(--tgg-hairline);
+      border-left: 3px solid var(--tgg-purple);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 0;
+    }
+    .testimonials .testimonial p {
+      font-style: italic;
+      color: var(--tgg-ink);
+      margin: 0 0 1rem 0;
+      line-height: 1.55;
+    }
+    .testimonials .testimonial cite {
+      font-style: normal;
+      font-size: 0.9rem;
+      color: var(--tgg-ink-muted);
+    }
+    .testimonials .testimonial cite strong {
+      color: var(--tgg-navy);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="wrapper">
+      <a href="https://glindagroup.com/" class="brand" aria-label="The Glinda Group home">
+        <img src="../../files/logo.svg" alt="The Glinda Group" class="brand-logo">
+      </a>
+      <a href="https://glindagroup.com/" class="main-link">Explore Glinda →</a>
+    </div>
+  </nav>
+
+  <!-- ===== 1. HERO ===== -->
+  <section class="hero">
+    <div class="wrapper">
+      <h1>Why do half your people seem checked out?</h1>
+      <p class="sub">Status is unevenly distributed. Performance follows status, not seniority. We rewire who gets visibility.</p>
+      <div class="cta-row">
+        <a href="{{CALENDAR_URL}}" target="_blank" rel="noopener" class="btn btn-primary" data-cta="primary-hero">Book a call</a>
+        <a href="#contact" class="btn btn-secondary" data-cta="secondary-hero">Send us a message</a>
+      </div>
+          </div>
+  </section>
+
+
+  <!-- ===== Client logos band ===== -->
+  <section class="client-logos">
+    <div class="wrapper">
+      <p class="logos-eyebrow">Behavioral science with teams at:</p>
+      <div class="logos-row">
+        <span class="client-name">Second Harvest Heartland</span>
+        <span class="client-name">Aspect Software</span>
+        <span class="client-name">Synd.io</span>
+      </div>
+    </div>
+  </section>
+  <!-- ===== 2. SYMPTOM ===== -->
+  <section class="symptom alt-bg">
+    <div class="wrapper">
+      <h2>You might recognize the shape.</h2>
+      <p class="intro">The same three people drive every conversation. Everyone else is on screen, technically present, contributing nothing visible.</p>
+      <ul>
+        <li><strong>Always-the-same loud voices in meetings.</strong> Three people speak; six people listen; nobody contributes from the listening side.</li>
+        <li><strong>Quiet contributors marked as 'underperforming' in reviews</strong> — without anyone being able to point at the work.</li>
+        <li><strong>Engagement-survey results that don't move year after year.</strong> The team isn't disengaged. The team is invisible.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===== 3. UNDERNEATH ===== -->
+  <section class="underneath">
+    <div class="wrapper">
+      <h2>What's underneath.</h2>
+      <p><span class="pattern-name">Status asymmetry.</span></p>
+      <p>Behavior tracks perceived status more reliably than role description. Redistribute status — by changing who gets surfaced — and behavior follows.</p>
+      <p>Co-occurs with silent disagreement and backchannel release-valve patterns.</p>
+    </div>
+  </section>
+
+  <!-- ===== 4. WHAT WE DO ===== -->
+  <section class="what-we-do alt-bg">
+    <div class="wrapper">
+      <h2>We change the loop, not the symptom.</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>Workshop: Super Friends</h3>
+          <p>Half-day with the team. We rewire meeting structure so contribution surfaces across the team — not just from the usual three. By the end, status redistributes.</p>
+        </div>
+        <div class="card phaseware-card">
+          <h3>Phaseware</h3>
+          <p>Bespoke AI software, branded as yours, that holds the new behavior in place after we leave.</p>
+          <div class="phaseware-embed" data-phaseware-embed></div>
+        </div>
+        <div class="card">
+          <h3>Coach-sulting</h3>
+          <p>Ongoing advisory until the new behavior holds on its own.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 5. OUTCOMES ===== -->
+  <section class="outcomes">
+    <div class="wrapper">
+      <h2>The metric you started with, moving.</h2>
+      <div class="outcomes-strip">
+        <div class="outcome">
+          <div class="number">+47%</div>
+          <div class="label">Distribution of speaking time across team members.</div>
+        </div>
+        <div class="outcome">
+          <div class="number">85%</div>
+          <div class="label">Psychological safety (Edmondson 7-item).</div>
+        </div>
+        <div class="outcome">
+          <div class="number">+22pts</div>
+          <div class="label">Of formerly-quiet contributors who now contribute in standup.</div>
+        </div>
+      </div>
+      <p class="outcomes-caveat">Indicative figures from past engagements; your numbers will be measured against your baseline.</p>
+    </div>
+  </section>
+
+
+  <!-- ===== Testimonials band ===== -->
+  <section class="testimonials">
+    <div class="wrapper">
+      <h2>What clients say.</h2>
+      <div class="testimonials-row">
+        <blockquote class="testimonial">
+          <p>"We were clear on our development focus for the year. What was much harder was identifying the right partner to work with—one that is innovative and nimble, could bring best practice and industry experience, and keep our team engaged and challenged. A tall order, and one that the Glinda Group knocked out of the park!"</p>
+          <cite><strong>Sarah Waite</strong> · CHRO, Second Harvest Heartland</cite>
+        </blockquote>
+        <blockquote class="testimonial">
+          <p>"I had sky-high expectations for Jordan and Laura, and they exceeded them. Their contributions to our business have been broader and more impactful than I ever could have imagined, and I want more."</p>
+          <cite><strong>Darryl Kelly</strong> · CEO, Aspect Software</cite>
+        </blockquote>
+      </div>
+    </div>
+  </section>
+  <!-- ===== 6. CTA ===== -->
+  <section class="cta-block">
+    <div class="wrapper">
+      <h2>Tell us what's not working.</h2>
+      <p class="cta-line">We'll tell you what pattern is likely underneath, and what an intervention would look like for your context.</p>
+      <div class="cta-row">
+        <a href="{{CALENDAR_URL}}" target="_blank" rel="noopener" class="btn btn-primary" data-cta="primary-footer">Book a call</a>
+        <a href="#contact" class="btn btn-secondary" data-cta="secondary-footer">Send us a message</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Inline form ===== -->
+  <section class="form-block" id="contact">
+    <div class="wrapper">
+      <h2>Send us a message.</h2>
+      <form id="lead-form" novalidate>
+        <div>
+          <label for="lf-name">Your name</label>
+          <input type="text" id="lf-name" name="name" required>
+        </div>
+        <div>
+          <label for="lf-email">Email</label>
+          <input type="email" id="lf-email" name="email" required>
+        </div>
+        <div>
+          <label for="lf-company">Company (optional)</label>
+          <input type="text" id="lf-company" name="company">
+        </div>
+        <div>
+          <label for="lf-company-size">Company size</label>
+          <select id="lf-company-size" name="company_size" required>
+            <option value="">Select…</option>
+            <option value="1-10">1-10</option>
+            <option value="11-49">11-49</option>
+            <option value="50-100">50-100</option>
+            <option value="101-1000">101-1000</option>
+            <option value="1000+">1000+</option>
+          </select>
+        </div>
+        <div>
+          <label for="lf-role">Your role</label>
+          <select id="lf-role" name="role" required>
+            <option value="">Select…</option>
+            <option value="Founder">Founder</option>
+            <option value="Exec">Exec</option>
+            <option value="People leader">People leader</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="lf-symptom">Describe the symptom</label>
+          <textarea id="lf-symptom" name="symptom" required placeholder="Tell us in a couple of sentences what's not working, e.g. three people drive every meeting and the rest stay quiet through the whole year."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Send</button>
+        <div class="form-status" id="lf-status" role="status" aria-live="polite"></div>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrapper">
+      <div class="signature">Kindness is Cooler than Coolness.</div>
+      <div>The Glinda Group · Behavioral science with a sense of humor.</div>
+    </div>
+  </footer>
+
+  <script>
+    // Lead form submit — writes to Firebase RTDB /leads/{push-id} if configured;
+    // falls back to a friendly success message in degraded mode (placeholder config).
+    (function () {
+      var form = document.getElementById('lead-form');
+      var statusEl = document.getElementById('lf-status');
+      if (!form) return;
+
+      function showStatus(kind, msg) {
+        statusEl.className = 'form-status ' + kind;
+        statusEl.textContent = msg;
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var data = {
+          name: form.name.value.trim(),
+          email: form.email.value.trim(),
+          company: form.company.value.trim(),
+          company_size: form.company_size.value,
+          role: form.role.value,
+          symptom: form.symptom.value.trim(),
+          page_slug: 'lp-underperformance-superfriends',
+          referrer: document.referrer || '',
+          submitted_at: Date.now(),
+          utm_source: new URLSearchParams(window.location.search).get('utm_source') || '',
+          utm_medium: new URLSearchParams(window.location.search).get('utm_medium') || '',
+          utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign') || '',
+          utm_content: new URLSearchParams(window.location.search).get('utm_content') || ''
+        };
+
+        if (!data.name || !data.email || !data.company_size || !data.role || !data.symptom) {
+          showStatus('error', 'Please fill in the required fields.');
+          return;
+        }
+
+        var cfg = window.GLINDA_CONTACT_CONFIG && window.GLINDA_CONTACT_CONFIG.FIREBASE_CONFIG;
+        var dbUrl = cfg && cfg.databaseURL;
+
+        // Detect placeholder config — same pattern as review-widget degraded mode.
+        if (!dbUrl || dbUrl.indexOf('TBD') !== -1) {
+          console.warn('[lead-form] Firebase not yet provisioned — degraded mode. Captured data:', data);
+          showStatus('success', "Thanks — we'll be in touch within one business day. (Note: backend not yet live; your submission was captured locally.)");
+          form.reset();
+          return;
+        }
+
+        // Real submit: POST to RTDB at /leads.json (REST API).
+        fetch(dbUrl + '/leads.json', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        })
+          .then(function (res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+          })
+          .then(function () {
+            showStatus('success', "Thanks — we'll be in touch within one business day.");
+            form.reset();
+          })
+          .catch(function (err) {
+            console.error('[lead-form] submit failed:', err);
+            showStatus('error', "Something went wrong on our end. Please email team@glindagroup.com directly.");
+          });
+      });
+    })();
+  </script>
+
+</body>
+</html>

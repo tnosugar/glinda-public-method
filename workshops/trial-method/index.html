@@ -29,26 +29,45 @@
        in brandbook.md first, then port here.
        =========================================== */
     :root {
-      /* Core palette */
-      --c-primary: #8705E4;       /* Purple — CTA, accents, default link */
-      --c-secondary: #01055E;     /* Indigo — deep backgrounds, heavy headings */
-      --c-accent: #53DEFF;        /* Cyan — accent strokes, hover links only (WCAG caveat §7) */
-      --c-text: #434343;          /* Body copy */
-      --c-white: #FFFFFF;
-      /* Neutrals */
-      --c-gray-light: #C8D5DC;
-      --c-offwhite-cool: #F9FAFD; /* Centerpiece section background */
-      --c-gray-pale: #F5F5F5;     /* Card surface */
-      /* Utility */
-      --c-muted: #64748b;         /* Pending-field muted text */
-      --c-divider: #e2e8f0;
-      --c-pending-border: #c4b5fd; /* Dashed border around pending-flagged blocks */
+      /* Brand tokens — sourced from brand/ui-kit-tokens.md (canonical Glinda UI Kit) */
+      /* Brand colors */
+      --tgg-purple: #8705E4;
+      --tgg-purple-darker: #6804B5;   /* project-only — hover state */
+      --tgg-navy: #01055E;
+      --tgg-sky: #53DEFF;
 
-      /* Type scale — desktop, per brandbook §2.2 */
+      /* Neutrals */
+      --tgg-off-white: #F5F5F5;
+      --tgg-gray: #434343;
+      --tgg-ink: #41505A;
+      --tgg-ink-muted: #7E8C9F;
+      --tgg-hairline: #CDDCDF;
+
+      /* Tints */
+      --tgg-tint-sky: #E8F5FF;
+      --tgg-tint-cream: #EFF5F7;
+
+      /* Project-only — trial-method-specific accents (not in kit) */
+      --c-gray-light: #C8D5DC;        /* legacy WordPress kit token; some pending-state UI uses it */
+      --c-pending-border: #c4b5fd;    /* dashed border around pending-flagged blocks */
+
+      /* Semantic aliases */
+      --fg-1: var(--tgg-ink);
+      --fg-2: var(--tgg-ink-muted);
+      --fg-brand: var(--tgg-purple);
+      --bg-1: #fff;
+      --bg-2: var(--tgg-off-white);
+      --border-1: var(--tgg-hairline);
+
+      /* Typography */
       --font-display: 'Space Grotesk', system-ui, sans-serif;
       --font-body: 'Open Sans', system-ui, sans-serif;
+      --font-mono: 'Roboto Mono', ui-monospace, Menlo, monospace;
 
-      /* Spacing rhythm */
+      /* Motion */
+      --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+      /* Spacing rhythm (project-only) */
       --section-pad-y: 6rem;
       --section-pad-y-sm: 3.5rem;
       --wrapper-max: 1120px;
@@ -62,8 +81,8 @@
       font-family: var(--font-body);
       font-weight: 400;
       line-height: 1.5;
-      color: var(--c-text);
-      background: var(--c-white);
+      color: var(--tgg-ink);
+      background: var(--bg-1);
       -webkit-font-smoothing: antialiased;
     }
 
@@ -71,15 +90,15 @@
        WCAG resolution: purple default (7.5:1), cyan hover.
        Brandbook §7 fix path (c). Always underlined for affordance. */
     a {
-      color: var(--c-primary);
+      color: var(--tgg-purple);
       text-decoration: underline;
       text-decoration-thickness: 1px;
       text-underline-offset: 2px;
       transition: color 0.15s ease;
     }
-    a:hover { color: var(--c-accent); }
+    a:hover { color: var(--tgg-sky); }
     a:focus-visible {
-      outline: 2px solid var(--c-primary);
+      outline: 2px solid var(--tgg-purple);
       outline-offset: 3px;
       border-radius: 2px;
     }
@@ -87,8 +106,8 @@
     /* ---------- Breadcrumb nav ---------- */
     .site-nav {
       padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--c-divider);
-      background: var(--c-white);
+      border-bottom: 1px solid var(--tgg-hairline);
+      background: var(--bg-1);
     }
     .site-nav-inner {
       max-width: var(--wrapper-max);
@@ -103,27 +122,27 @@
       font-family: var(--font-display);
       font-weight: 700;
       font-size: 1rem;
-      color: var(--c-secondary);
+      color: var(--tgg-navy);
       text-decoration: none;
       letter-spacing: -0.01em;
       display: inline-flex;
       align-items: center;
       gap: 0.625rem;
     }
-    .site-nav-brand:hover { color: var(--c-primary); }
+    .site-nav-brand:hover { color: var(--tgg-purple); }
     .site-nav-brand img { height: 28px; width: 28px; }
     .breadcrumb {
       font-family: var(--font-body);
       font-size: 0.875rem;
-      color: var(--c-muted);
+      color: var(--tgg-ink-muted);
     }
     .breadcrumb a {
-      color: var(--c-muted);
+      color: var(--tgg-ink-muted);
       text-decoration: none;
       font-weight: 600;
     }
-    .breadcrumb a:hover { color: var(--c-primary); text-decoration: underline; }
-    .breadcrumb .current { color: var(--c-secondary); font-weight: 700; }
+    .breadcrumb a:hover { color: var(--tgg-purple); text-decoration: underline; }
+    .breadcrumb .current { color: var(--tgg-navy); font-weight: 700; }
     .breadcrumb .sep { margin: 0 0.5rem; color: var(--c-gray-light); }
 
     /* ---------- Buttons ---------- */
@@ -135,17 +154,17 @@
       text-transform: uppercase;
       letter-spacing: 0.04em;
       padding: 1rem 2rem;
-      background: var(--c-primary);
-      color: var(--c-white);
+      background: var(--tgg-purple);
+      color: var(--bg-1);
       text-decoration: none;
       border-radius: 4px;
-      border: 2px solid var(--c-primary);
+      border: 2px solid var(--tgg-purple);
       transition: all 0.15s ease;
     }
     .cta-primary:hover {
-      background: var(--c-secondary);
-      border-color: var(--c-secondary);
-      color: var(--c-white);
+      background: var(--tgg-navy);
+      border-color: var(--tgg-navy);
+      color: var(--bg-1);
     }
     .cta-primary::after {
       content: ' →';
@@ -163,7 +182,7 @@
     }
     main > section { padding: var(--section-pad-y) 0; }
     main > section.surface-offwhite {
-      background: var(--c-offwhite-cool);
+      background: var(--tgg-tint-cream);
       padding-left: 0;
       padding-right: 0;
       margin-top: 0;
@@ -173,8 +192,8 @@
       padding-bottom: 0;
     }
     main > section.surface-indigo {
-      background: var(--c-secondary);
-      color: var(--c-white);
+      background: var(--tgg-navy);
+      color: var(--bg-1);
     }
 
     /* ---------- Eyebrow ---------- */
@@ -184,10 +203,10 @@
       font-size: 0.875rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--c-primary);
+      color: var(--tgg-purple);
       margin-bottom: 1rem;
     }
-    .surface-indigo .eyebrow { color: var(--c-accent); }
+    .surface-indigo .eyebrow { color: var(--tgg-sky); }
 
     /* ---------- Hero ---------- */
     .hero {
@@ -206,18 +225,18 @@
       font-weight: 700;
       font-size: clamp(2rem, 5.5vw, 4.0625rem); /* 65px desktop, scales per brandbook §2.3 */
       line-height: 1.1;
-      color: var(--c-secondary);
+      color: var(--tgg-navy);
       max-width: 20ch;
       margin: 0 auto 1.5rem;
       letter-spacing: -0.01em;
     }
-    .hero h1 strong { color: var(--c-primary); font-weight: 700; }
+    .hero h1 strong { color: var(--tgg-purple); font-weight: 700; }
     .hero-subhead {
       font-family: var(--font-display);
       font-weight: 500;
       font-style: italic;
       font-size: clamp(1.125rem, 2.2vw, 1.5rem);
-      color: var(--c-text);
+      color: var(--tgg-ink);
       max-width: 40ch;
       margin: 0 auto 2.5rem;
     }
@@ -232,25 +251,25 @@
       font-weight: 700;
       font-size: clamp(1.75rem, 3.8vw, 2.625rem); /* 42px desktop, per brandbook §2.2 */
       line-height: 1.15;
-      color: var(--c-secondary);
+      color: var(--tgg-navy);
       letter-spacing: -0.01em;
       text-transform: capitalize;
     }
-    .surface-indigo h2 { color: var(--c-white); }
+    .surface-indigo h2 { color: var(--bg-1); }
 
     .section-lede {
       font-size: 1.0625rem;
       line-height: 1.6;
-      color: var(--c-text);
+      color: var(--tgg-ink);
       max-width: 62ch;
     }
     .section-lede + .section-lede { margin-top: 1.25rem; }
     .section-lede em {
       font-style: italic;
       font-weight: 600;
-      color: var(--c-primary);
+      color: var(--tgg-purple);
     }
-    .section-lede strong { color: var(--c-secondary); font-weight: 700; }
+    .section-lede strong { color: var(--tgg-navy); font-weight: 700; }
 
     /* ---------- Problem framing block ---------- */
     .problem-framing .section-lede + .section-lede { margin-top: 1.5rem; }
@@ -264,8 +283,8 @@
       margin-bottom: 2.5rem;
     }
     .wk-card {
-      background: var(--c-white);
-      border: 1px solid var(--c-divider);
+      background: var(--bg-1);
+      border: 1px solid var(--tgg-hairline);
       border-radius: 10px;
       padding: 2rem;
     }
@@ -275,12 +294,12 @@
       font-size: 0.75rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--c-primary);
+      color: var(--tgg-purple);
       margin-bottom: 1.5rem;
       padding-bottom: 0.75rem;
-      border-bottom: 1px solid var(--c-accent);
+      border-bottom: 1px solid var(--tgg-sky);
     }
-    .wk-tier { padding: 1rem 0; border-bottom: 1px solid var(--c-divider); }
+    .wk-tier { padding: 1rem 0; border-bottom: 1px solid var(--tgg-hairline); }
     .wk-tier:last-child { border-bottom: 0; }
     .wk-tier-name {
       font-family: var(--font-display);
@@ -288,7 +307,7 @@
       font-size: 0.8125rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--c-secondary);
+      color: var(--tgg-navy);
       display: block;
       margin-bottom: 0.375rem;
     }
@@ -296,7 +315,7 @@
       font-family: var(--font-body);
       font-size: 1.0625rem;
       line-height: 1.45;
-      color: var(--c-text);
+      color: var(--tgg-ink);
     }
     .wk-tier-value ol {
       list-style: none;
@@ -317,9 +336,9 @@
       font-weight: 700;
       font-size: 0.75rem;
       letter-spacing: 0.04em;
-      color: var(--c-primary);
-      background: var(--c-white);
-      border: 1px solid var(--c-primary);
+      color: var(--tgg-purple);
+      background: var(--bg-1);
+      border: 1px solid var(--tgg-purple);
       border-radius: 999px;
       padding: 0.0625rem 0.4375rem;
     }
@@ -338,7 +357,7 @@
     .didactic-pair p:last-child {
       font-family: var(--font-display);
       font-weight: 700;
-      color: var(--c-primary);
+      color: var(--tgg-purple);
       font-size: 1.375rem;
       line-height: 1.35;
     }
@@ -352,7 +371,7 @@
     }
     .step {
       padding-top: 1.5rem;
-      border-top: 3px solid var(--c-primary);
+      border-top: 3px solid var(--tgg-purple);
     }
     .step-num {
       font-family: var(--font-display);
@@ -360,25 +379,25 @@
       font-size: 0.75rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--c-primary);
+      color: var(--tgg-purple);
       margin-bottom: 0.75rem;
     }
     .step-title {
       font-family: var(--font-display);
       font-weight: 700;
       font-size: 1.375rem;
-      color: var(--c-secondary);
+      color: var(--tgg-navy);
       margin-bottom: 0.75rem;
       line-height: 1.2;
     }
     .step-body { font-size: 1rem; line-height: 1.55; }
-    .step-body em { font-style: italic; color: var(--c-primary); font-weight: 600; }
+    .step-body em { font-style: italic; color: var(--tgg-purple); font-weight: 600; }
 
     /* ---------- Metadata strip (pending) ---------- */
     .metadata-strip {
       margin-top: 3.5rem;
       padding: 2rem;
-      background: var(--c-white);
+      background: var(--bg-1);
       border-radius: 10px;
     }
     .metadata-grid {
@@ -393,14 +412,14 @@
       font-size: 0.6875rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--c-muted);
+      color: var(--tgg-ink-muted);
       margin-bottom: 0.5rem;
     }
     .metadata-value {
       font-family: var(--font-display);
       font-weight: 700;
       font-size: 1rem;
-      color: var(--c-secondary);
+      color: var(--tgg-navy);
       line-height: 1.3;
     }
 
@@ -413,15 +432,15 @@
     }
     .format-card {
       padding: 2rem;
-      background: var(--c-offwhite-cool);
-      border: 1px solid var(--c-divider);
+      background: var(--tgg-tint-cream);
+      border: 1px solid var(--tgg-hairline);
       border-radius: 10px;
     }
     .format-card h3 {
       font-family: var(--font-display);
       font-weight: 700;
       font-size: 1.5rem;
-      color: var(--c-primary);
+      color: var(--tgg-purple);
       margin-bottom: 1rem;
       letter-spacing: -0.005em;
     }
@@ -436,7 +455,7 @@
     .outcomes-list li {
       position: relative;
       padding: 1.125rem 0 1.125rem 2.75rem;
-      border-bottom: 1px solid var(--c-divider);
+      border-bottom: 1px solid var(--tgg-hairline);
       font-size: 1.0625rem;
       line-height: 1.55;
     }
@@ -448,7 +467,7 @@
       top: 1.375rem;
       width: 1.5rem;
       height: 2px;
-      background: var(--c-primary);
+      background: var(--tgg-purple);
     }
 
     /* ---------- Testimonial ---------- */
@@ -456,8 +475,8 @@
       max-width: 800px;
       margin: 2rem auto 0;
       padding: 2.5rem 2.5rem 2rem;
-      background: var(--c-white);
-      border-left: 4px solid var(--c-accent);
+      background: var(--bg-1);
+      border-left: 4px solid var(--tgg-sky);
       border-radius: 4px;
     }
     .testimonial blockquote {
@@ -466,7 +485,7 @@
       font-style: italic;
       font-size: 1.375rem;
       line-height: 1.45;
-      color: var(--c-secondary);
+      color: var(--tgg-navy);
       margin-bottom: 1.25rem;
       text-transform: none;
     }
@@ -475,11 +494,11 @@
       font-style: normal;
       font-weight: 700;
       font-size: 0.9375rem;
-      color: var(--c-text);
+      color: var(--tgg-ink);
     }
     .testimonial cite .attrib-role {
       font-weight: 400;
-      color: var(--c-muted);
+      color: var(--tgg-ink-muted);
     }
 
     /* ---------- Pending marker ---------- */
@@ -504,8 +523,8 @@
       font-size: 0.625rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      background: var(--c-primary);
-      color: var(--c-white);
+      background: var(--tgg-purple);
+      color: var(--bg-1);
       padding: 0.3125rem 0.75rem;
       border-radius: 999px;
     }
@@ -522,14 +541,14 @@
       max-width: 24ch;
       margin-left: auto;
       margin-right: auto;
-      color: var(--c-white);
+      color: var(--bg-1);
     }
 
     /* ---------- Footer ---------- */
     footer {
       padding: 3rem 1.5rem 3.5rem;
-      background: var(--c-white);
-      border-top: 1px solid var(--c-divider);
+      background: var(--bg-1);
+      border-top: 1px solid var(--tgg-hairline);
       text-align: center;
     }
     .footer-signature {
@@ -537,7 +556,7 @@
       font-weight: 500;
       font-style: italic;
       font-size: 1.125rem;
-      color: var(--c-primary);
+      color: var(--tgg-purple);
       margin-bottom: 1rem;
     }
     .footer-back {
@@ -546,14 +565,14 @@
       font-size: 0.875rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--c-secondary);
+      color: var(--tgg-navy);
       text-decoration: none;
     }
-    .footer-back:hover { color: var(--c-primary); text-decoration: underline; }
+    .footer-back:hover { color: var(--tgg-purple); text-decoration: underline; }
     .footer-legal {
       margin-top: 2rem;
       font-size: 0.75rem;
-      color: var(--c-muted);
+      color: var(--tgg-ink-muted);
     }
 
     /* ===========================================
@@ -874,7 +893,7 @@
     <section class="cta-repeat surface-indigo">
       <div class="wrapper">
         <h2>Ready to run your first T.R.I.A.L.?</h2>
-        <a href="https://glindagroup.com/contact/?workshop=trial-method" class="cta-primary" style="background: var(--c-accent); color: var(--c-secondary); border-color: var(--c-accent);">Book a T.R.I.A.L. engagement</a>
+        <a href="https://glindagroup.com/contact/?workshop=trial-method" class="cta-primary" style="background: var(--tgg-sky); color: var(--tgg-navy); border-color: var(--tgg-sky);">Book a T.R.I.A.L. engagement</a>
       </div>
     </section>
 
