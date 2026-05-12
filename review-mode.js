@@ -138,12 +138,58 @@ function derivePageSlug() {
   return path.replace(/\//g, '-');
 }
 
+// Glinda variation (2026-05-14): full-body scope so site chrome (nav/header/
+// footer) is in the anchoring pass. The chrome-vs-content distinction is now
+// made by tryAnchor() based on isInSiteChrome(el), not by excluding it from
+// the content area. See .claude/variations/review-widget.md §"Commentable
+// everything — direct-text default + chrome-anchored".
 function selectContentArea() {
-  return document.querySelector('main') || document.body;
+  return document.body;
 }
 
+// Widget chrome only — the review widget's own UI elements. Site chrome
+// (nav/header/footer) is anchored, not skipped, in this glinda variation.
 function isInChrome(el) {
-  return !!el.closest('nav, header[role="banner"], footer, .review-banner, .review-sidebar, .review-sidebar-toggle, .review-modal-backdrop, .review-toast');
+  return !!el.closest('.review-banner, .review-sidebar, .review-sidebar-toggle, .review-modal-backdrop, .review-toast, .review-toggle-btn');
+}
+
+// Site chrome — nav, semantic banner header, footer. Used by tryAnchor() to
+// generate page-independent 'chrome-{tag}-{n}' slugs so a comment on the
+// nav logo lives at page='__chrome__' and surfaces on every page.
+function isInSiteChrome(el) {
+  return !!el.closest('nav, header[role="banner"], footer');
+}
+
+// Deny-list — elements that should never be anchored regardless of tag.
+// Interactive form controls (can't host child pills + conflict on click).
+// Non-visual elements (script/style/meta). Vector graphics (SVG paths etc).
+// External content (iframe/embed). Void elements (br/hr/img/etc).
+const NEVER_ANCHOR = new Set([
+  'input', 'select', 'textarea', 'option', 'optgroup', 'datalist', 'fieldset', 'legend',
+  'script', 'style', 'template', 'noscript', 'meta', 'link', 'title', 'head', 'html', 'body',
+  'svg', 'path', 'circle', 'rect', 'ellipse', 'polygon', 'polyline', 'line', 'g', 'use', 'defs', 'symbol', 'marker',
+  'iframe', 'embed', 'object', 'param',
+  'br', 'hr', 'img', 'video', 'audio', 'source', 'track', 'picture',
+  'col', 'colgroup'
+]);
+
+// Cross-page sticky counter for site-chrome elements. The first nav <a> on
+// page A and the first nav <a> on page B both get 'chrome-a-1'. A comment
+// posted with anchor='chrome-a-1' page='__chrome__' surfaces on both pages.
+const CHROME_COUNTERS = Object.create(null);
+
+// Direct-text check — element has at least one text node child with content
+// of >= 2 chars (whitespace-trimmed). This catches <p>Hello</p>, <a>Link</a>,
+// <button>Send</button>, <label>Name</label>, <h1>Title</h1>, etc. — it
+// EXCLUDES wrapper elements like <div> that contain only other anchored
+// elements (their text lives in descendants, not direct text nodes).
+function hasDirectText(el) {
+  for (const child of el.childNodes) {
+    if (child.nodeType === Node.TEXT_NODE && child.textContent.trim().length >= 2) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // Effective anchor list = canonical ANCHOR_TAGS + project ANCHOR_TAGS_EXTRA.
@@ -156,17 +202,30 @@ function getEffectiveAnchorTags() {
 }
 
 // Assigns a data-comment-id and injects the pill container/host for a
-// single element. Sticky-counter-aware (uses module-scoped anchorCounters).
-// Dedupes: returns early if the element already carries data-comment-id.
-function tryAnchor(el, tag) {
-  if (!el || isInChrome(el)) return false;
-  if (el.hasAttribute('data-comment-id')) return false;
-  const text = (el.textContent || '').trim();
-  if (text.length < 2) return false;
+// single element. New default (glinda variation 2026-05-14): anchors any
+// element with direct text content >= 2 chars, regardless of tag, with a
+// deny-list of obviously-not-anchor elements (form controls, SVG, scripts,
+// etc.). Site chrome (nav/header/footer) gets 'chrome-{tag}-{n}' slugs with
+// a separate counter so the same anchor IDs are stable across pages.
+function tryAnchor(el) {
+  if (!el || el.nodeType !== Node.ELEMENT_NODE) return false;
+  if (isInChrome(el)) return false;                                  // widget chrome
+  if (el.hasAttribute('data-comment-id')) return false;              // already anchored
+  if (el.hasAttribute('data-review-skip')) return false;             // explicit opt-out
+  const tag = el.tagName.toLowerCase();
+  if (NEVER_ANCHOR.has(tag)) return false;                           // deny-list
+  if (!hasDirectText(el)) return false;                              // wrappers excluded
 
-  anchorCounters[tag] = (anchorCounters[tag] || 0) + 1;
-  const n = anchorCounters[tag];
-  const id = `${state.pageSlug}-${tag}-${n}`;
+  const inSiteChrome = isInSiteChrome(el);
+  let id;
+  if (inSiteChrome) {
+    CHROME_COUNTERS[tag] = (CHROME_COUNTERS[tag] || 0) + 1;
+    id = `chrome-${tag}-${CHROME_COUNTERS[tag]}`;
+    el.setAttribute('data-chrome-anchor', '');
+  } else {
+    anchorCounters[tag] = (anchorCounters[tag] || 0) + 1;
+    id = `${state.pageSlug}-${tag}-${anchorCounters[tag]}`;
+  }
   el.setAttribute('data-comment-id', id);
 
   if (!el.querySelector(':scope > .review-pill-container')) {
@@ -191,29 +250,24 @@ function tryAnchor(el, tag) {
 
 // Anchor a subtree rooted at `rootNode` — used by both the initial
 // anchorPage() pass and the MutationObserver dynamic-content path.
-// Two passes per subtree: (1) effective tag list, (2) [data-comment-target] opt-ins.
-// Per anchor-extensibility.md §"The three mechanisms".
+// Glinda variation (2026-05-14): walks ALL element descendants and lets
+// tryAnchor() decide via hasDirectText + deny-list, rather than iterating
+// an ANCHOR_TAGS allowlist. Catches every text-bearing element including
+// site chrome (nav/header/footer) — those get 'chrome-{tag}-{n}' slugs
+// inside tryAnchor() so comments on shared chrome elements surface
+// cross-page. See .claude/variations/review-widget.md §"Commentable
+// everything — direct-text default + chrome-anchored".
 function anchorSubtree(rootNode) {
   if (!rootNode || rootNode.nodeType !== Node.ELEMENT_NODE) return 0;
   let anchored = 0;
-  const tags = getEffectiveAnchorTags();
 
-  for (const tag of tags) {
-    if (rootNode.tagName && rootNode.tagName.toLowerCase() === tag) {
-      if (tryAnchor(rootNode, tag)) anchored++;
-    }
-    rootNode.querySelectorAll(tag).forEach((el) => {
-      if (tryAnchor(el, tag)) anchored++;
-    });
-  }
+  // Try the root itself (only if it's not the body — body's text content
+  // would always pass hasDirectText if any text exists anywhere).
+  if (rootNode !== document.body && tryAnchor(rootNode)) anchored++;
 
-  // Per-element opt-in via [data-comment-target] — dedupes against the
-  // tag-list pass via the data-comment-id check inside tryAnchor().
-  if (rootNode.matches && rootNode.matches('[data-comment-target]')) {
-    if (tryAnchor(rootNode, rootNode.tagName.toLowerCase())) anchored++;
-  }
-  rootNode.querySelectorAll('[data-comment-target]').forEach((el) => {
-    if (tryAnchor(el, el.tagName.toLowerCase())) anchored++;
+  // Walk every descendant element. tryAnchor() is the gate.
+  rootNode.querySelectorAll('*').forEach((el) => {
+    if (tryAnchor(el)) anchored++;
   });
 
   return anchored;
@@ -289,7 +343,7 @@ function subscribeComments(onInitial) {
     const all = snap.val() || {};
     const filtered = {};
     for (const [id, rec] of Object.entries(all)) {
-      if (!rec || rec.page !== state.pageSlug) continue;
+      if (!rec || (rec.page !== state.pageSlug && rec.page !== '__chrome__')) continue;
       // Migrate legacy records: archived boolean + status string → status enum
       if (!rec.status) {
         if (rec.archived === true) rec.status = 'archived';
@@ -774,9 +828,11 @@ function renderModal(existing) {
       } else {
         if (!anchorEl) { showToast(state.LABELS.elementGone); return; }
         const text_preview = (anchorEl.textContent || '').trim().slice(0, 80);
+        const isChrome = anchorId.startsWith('chrome-');
         const rec = {
           comment, replacement,
-          anchor: anchorId, page: state.pageSlug,
+          anchor: anchorId,
+          page: isChrome ? '__chrome__' : state.pageSlug,
           status: 'pending',
           timestamp: Date.now(),
           text_preview,
