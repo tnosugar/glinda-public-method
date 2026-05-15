@@ -67,8 +67,12 @@
 
     /* ---------- Nav ---------- */
     nav {
-      padding: 1.25rem 0;
+      padding: 1.5rem 0;
       border-bottom: 1px solid var(--tgg-hairline);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--bg-1);
     }
     nav .wrapper {
       display: flex;
@@ -82,20 +86,53 @@
       line-height: 0;
     }
     nav a.brand .brand-logo {
-      height: 36px;
+      height: 72px;
       width: auto;
       display: block;
       transition: opacity 0.15s var(--ease-out);
     }
     nav a.brand:hover .brand-logo { opacity: 0.8; }
-    nav .main-link {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--tgg-navy);
-      text-decoration: none;
-      transition: color 0.15s var(--ease-out);
+    nav .nav-actions {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
     }
-    nav .main-link:hover { color: var(--tgg-purple); }
+    nav .btn-nav {
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.55rem 1rem;
+      border-radius: 6px;
+      text-decoration: none;
+      border: 1px solid transparent;
+      transition: background 0.15s var(--ease-out), color 0.15s var(--ease-out), border-color 0.15s var(--ease-out);
+      white-space: nowrap;
+      line-height: 1;
+    }
+    nav .btn-nav.primary {
+      background: var(--tgg-purple);
+      color: var(--bg-1);
+    }
+    nav .btn-nav.primary:hover {
+      background: var(--tgg-purple-darker);
+      color: var(--bg-1);
+    }
+    nav .btn-nav.secondary {
+      color: var(--tgg-purple);
+      border-color: var(--tgg-purple);
+      background: transparent;
+    }
+    nav .btn-nav.secondary:hover {
+      background: var(--tgg-purple);
+      color: var(--bg-1);
+    }
+    @media (max-width: 640px) {
+      nav .btn-nav.secondary { display: none; }
+      nav .btn-nav { font-size: 0.8rem; padding: 0.5rem 0.8rem; }
+      nav a.brand .brand-logo { height: 56px; }
+    }
+    /* Scroll anchor offset so #contact lands clear of the sticky nav */
+    [id] { scroll-margin-top: 130px; }
 
     /* ---------- Hero ---------- */
     .hero {
@@ -198,6 +235,203 @@
       .card { min-height: 160px; }
     }
 
+    /* ---------- Buttons (form submit) ---------- */
+    .btn {
+      display: inline-block;
+      padding: 0.85rem 1.5rem;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: background 0.15s var(--ease-out), transform 0.15s var(--ease-out);
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .btn-primary {
+      background: var(--tgg-purple);
+      color: var(--bg-1);
+    }
+    .btn-primary:hover {
+      background: var(--tgg-purple-darker);
+      color: var(--bg-1);
+      transform: translateY(-1px);
+    }
+
+    /* ---------- Form block ---------- */
+    .form-block {
+      padding: var(--section-pad-y) 0;
+      background: var(--tgg-tint-cream);
+      border-top: 1px solid var(--tgg-hairline);
+    }
+    .form-block .form-intro {
+      text-align: center;
+      max-width: 620px;
+      margin: 0 auto 2.5rem;
+    }
+    .form-block h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.85rem, 4vw, 2.5rem);
+      font-weight: 700;
+      line-height: 1.15;
+      color: var(--tgg-navy);
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.01em;
+    }
+    .form-block .form-sub {
+      font-size: 1.05rem;
+      color: var(--tgg-ink);
+      line-height: 1.5;
+    }
+    form#lead-form {
+      max-width: 560px;
+      margin: 0 auto;
+      display: grid;
+      gap: 1rem;
+    }
+    form#lead-form label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--tgg-navy);
+      margin-bottom: 0.35rem;
+    }
+    form#lead-form input,
+    form#lead-form select,
+    form#lead-form textarea {
+      width: 100%;
+      padding: 0.7rem 0.85rem;
+      border: 1px solid var(--tgg-hairline);
+      border-radius: 5px;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      color: var(--tgg-ink);
+      background: var(--bg-1);
+    }
+    form#lead-form input:focus,
+    form#lead-form select:focus,
+    form#lead-form textarea:focus {
+      outline: none;
+      border-color: var(--tgg-purple);
+      box-shadow: 0 0 0 3px rgba(135, 5, 228, 0.15);
+    }
+    form#lead-form textarea { min-height: 100px; resize: vertical; }
+    form#lead-form button[type="submit"] {
+      justify-self: start;
+      margin-top: 0.5rem;
+    }
+    .form-status {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      padding: 0.75rem 1rem;
+      border-radius: 5px;
+      display: none;
+    }
+    .form-status.success { display: block; background: rgba(83, 222, 255, 0.12); color: var(--tgg-navy); border: 1px solid var(--tgg-sky); }
+    .form-status.error { display: block; background: rgba(230, 57, 70, 0.08); color: #b91c1c; border: 1px solid #fca5a5; }
+
+    /* ---------- Science & Whimsy (founders) ---------- */
+    .founders {
+      padding: var(--section-pad-y) 0;
+      background: var(--bg-1);
+      border-top: 1px solid var(--tgg-hairline);
+    }
+    .founders .intro {
+      text-align: center;
+      max-width: 680px;
+      margin: 0 auto 3rem;
+    }
+    .founders .eyebrow {
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--tgg-purple);
+      margin-bottom: 0.75rem;
+    }
+    .founders h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.85rem, 4vw, 2.5rem);
+      font-weight: 700;
+      line-height: 1.15;
+      color: var(--tgg-navy);
+      margin-bottom: 1rem;
+      letter-spacing: -0.01em;
+    }
+    .founders .lede {
+      font-size: 1.05rem;
+      color: var(--tgg-ink);
+      line-height: 1.55;
+    }
+    .founder-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.75rem;
+      max-width: 880px;
+      margin: 0 auto;
+    }
+    .founder {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 2rem 1.75rem;
+      background: var(--bg-1);
+      border: 1px solid var(--tgg-hairline);
+      border-radius: 12px;
+    }
+    .founder-head {
+      display: flex;
+      gap: 1.25rem;
+      align-items: center;
+    }
+    .founder-photo {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 2px solid var(--tgg-tint-cream);
+    }
+    .founder-name {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--tgg-navy);
+      margin: 0 0 0.2rem;
+      line-height: 1.2;
+    }
+    .founder-role {
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--tgg-purple);
+    }
+    .founder-bio {
+      font-size: 0.95rem;
+      line-height: 1.55;
+      color: var(--tgg-ink);
+      margin: 0;
+    }
+    .founder-link {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--tgg-purple);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      margin-top: auto;
+    }
+    .founder-link:hover { color: var(--tgg-purple-darker); text-decoration: underline; }
+    @media (max-width: 800px) {
+      .founder-grid { grid-template-columns: 1fr; }
+      .founder-photo { width: 80px; height: 80px; }
+    }
+
     /* ---------- Footer ---------- */
     footer {
       padding: 2.5rem 0;
@@ -218,10 +452,13 @@
 
   <nav>
     <div class="wrapper">
-      <a href="https://glindagroup.com/" class="brand" aria-label="The Glinda Group home">
+      <a href="./" class="brand" aria-label="Engage Glinda home">
         <img src="./files/logo.svg" alt="The Glinda Group" class="brand-logo">
       </a>
-      <a href="https://glindagroup.com/" class="main-link">Explore Glinda →</a>
+      <div class="nav-actions">
+        <a href="#contact" class="btn-nav secondary" data-cta="nav-send">Send us a message</a>
+        <a href="{{CALENDAR_URL}}" target="_blank" rel="noopener" class="btn-nav primary" data-cta="nav-book">Book a call</a>
+      </div>
     </div>
   </nav>
 
@@ -301,12 +538,202 @@
     </div>
   </section>
 
+  <!-- ===== FORM — tell us what's not working ===== -->
+  <section class="form-block" id="contact">
+    <div class="wrapper">
+      <div class="form-intro">
+        <h2>Tell us what's not working.</h2>
+        <p class="form-sub">Send us a message — describe the symptom in a couple of sentences. We'll come back within one business day with a read on what's underneath.</p>
+      </div>
+      <form id="lead-form" novalidate>
+        <div>
+          <label for="lf-name">Your name</label>
+          <input type="text" id="lf-name" name="name" required>
+        </div>
+        <div>
+          <label for="lf-email">Email</label>
+          <input type="email" id="lf-email" name="email" required>
+        </div>
+        <div>
+          <label for="lf-company">Company (optional)</label>
+          <input type="text" id="lf-company" name="company">
+        </div>
+        <div>
+          <label for="lf-company-size">Company size</label>
+          <select id="lf-company-size" name="company_size" required>
+            <option value="">Select…</option>
+            <option value="1-10">1-10</option>
+            <option value="11-49">11-49</option>
+            <option value="50-100">50-100</option>
+            <option value="101-1000">101-1000</option>
+            <option value="1000+">1000+</option>
+          </select>
+        </div>
+        <div>
+          <label for="lf-role">Your role</label>
+          <select id="lf-role" name="role" required>
+            <option value="">Select…</option>
+            <option value="Founder">Founder</option>
+            <option value="Exec">Exec</option>
+            <option value="People leader">People leader</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="lf-symptom">Describe the symptom</label>
+          <textarea id="lf-symptom" name="symptom" required placeholder="Tell us in a couple of sentences what's not working, e.g. our team agrees in meetings, then Slack threads rebuild the same decision two days later."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Send us a message</button>
+        <div class="form-status" id="lf-status" role="status" aria-live="polite"></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===== SCIENCE & WHIMSY — founders ===== -->
+  <section class="founders">
+    <div class="wrapper">
+      <div class="intro">
+        <div class="eyebrow">Science &amp; Whimsy</div>
+        <h2>Two ingredients. Behavioral science and unrepentant whimsy.</h2>
+        <p class="lede">Glinda was founded on the suspicion that organizations change fastest when somebody in the room takes the rigor seriously and the room itself a little less so. Meet the two people who built a practice around exactly that.</p>
+      </div>
+
+      <div class="founder-grid">
+        <article class="founder">
+          <div class="founder-head">
+            <img class="founder-photo" src="./files/laura-martin.png" alt="Laura Martin">
+            <div>
+              <h3 class="founder-name">Laura Martin, MBA</h3>
+              <div class="founder-role">Co-Founder, CEO</div>
+            </div>
+          </div>
+          <p class="founder-bio">Laura's work is proof that you don't need a spotlight to create lasting change. From her years at Target to her leadership in tech and HR, she's helped build teams where people grow, businesses weather storms, and the numbers improve almost by accident — because people come first. She doesn't claim to have all the answers, but never stops searching for better ones.</p>
+          <a class="founder-link" href="https://www.linkedin.com/in/lauraemartin1/" target="_blank" rel="noopener">Laura on LinkedIn →</a>
+        </article>
+
+        <article class="founder">
+          <div class="founder-head">
+            <img class="founder-photo" src="./files/jordan-birnbaum.png" alt="Jordan Scott Birnbaum">
+            <div>
+              <h3 class="founder-name">Jordan Scott Birnbaum, MA</h3>
+              <div class="founder-role">Co-Founder, Thinker/Doer</div>
+            </div>
+          </div>
+          <p class="founder-bio">Thinker / Doer is an apt description of a career defined by insatiable curiosity and a bias for action. From finance to internet to hospitality to HR tech, Jordan has a knack for influencing people and building new things. Despite a long list of accomplishments, what he actually thinks about are the connections between them.</p>
+          <a class="founder-link" href="https://www.linkedin.com/company/jordan-birnbaum-consulting/" target="_blank" rel="noopener">Jordan on LinkedIn →</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
   <footer>
     <div class="wrapper">
       <div class="signature">Kindness is Cooler than Coolness.</div>
       <div>The Glinda Group · Behavioral science with a sense of humor.</div>
     </div>
   </footer>
+
+  <script>
+    // Lead form submit — writes to Firebase RTDB /leads/{push-id} if configured;
+    // falls back to a friendly success message in degraded mode (placeholder config).
+    //
+    // UTM persistence (2026-05-15): UTMs are captured from the URL on every page
+    // load and stashed in sessionStorage so internal navigation doesn't strip the
+    // original attribution. At submit time we read URL first, then sessionStorage,
+    // then default to ''. This means a visitor landing on /lp-x/?utm_source=linkedin
+    // who clicks through to /lp-y/ and submits there still carries linkedin
+    // attribution on the lead.
+    (function () {
+      var UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+
+      // Stash any UTMs present in the URL into sessionStorage. Runs on every
+      // page load — last entry-with-UTMs wins per session.
+      (function persistUtms() {
+        try {
+          var qs = new URLSearchParams(window.location.search);
+          var snapshot = {};
+          var hasAny = false;
+          UTM_KEYS.forEach(function (k) {
+            var v = qs.get(k) || '';
+            snapshot[k] = v;
+            if (v) hasAny = true;
+          });
+          if (hasAny) sessionStorage.setItem('glinda_utms', JSON.stringify(snapshot));
+        } catch (e) { /* sessionStorage unavailable — silent */ }
+      })();
+
+      function getUtm(key) {
+        var fromUrl = new URLSearchParams(window.location.search).get(key);
+        if (fromUrl) return fromUrl;
+        try {
+          var stash = JSON.parse(sessionStorage.getItem('glinda_utms') || '{}');
+          return stash[key] || '';
+        } catch (e) { return ''; }
+      }
+
+      var form = document.getElementById('lead-form');
+      var statusEl = document.getElementById('lf-status');
+      if (!form) return;
+
+      function showStatus(kind, msg) {
+        statusEl.className = 'form-status ' + kind;
+        statusEl.textContent = msg;
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var data = {
+          name: form.name.value.trim(),
+          email: form.email.value.trim(),
+          company: form.company.value.trim(),
+          company_size: form.company_size.value,
+          role: form.role.value,
+          symptom: form.symptom.value.trim(),
+          page_slug: 'method-home',
+          referrer: document.referrer || '',
+          submitted_at: Date.now(),
+          utm_source:   getUtm('utm_source'),
+          utm_medium:   getUtm('utm_medium'),
+          utm_campaign: getUtm('utm_campaign'),
+          utm_content:  getUtm('utm_content'),
+          utm_term:     getUtm('utm_term')
+        };
+
+        if (!data.name || !data.email || !data.company_size || !data.role || !data.symptom) {
+          showStatus('error', 'Please fill in the required fields.');
+          return;
+        }
+
+        var cfg = window.GLINDA_CONTACT_CONFIG && window.GLINDA_CONTACT_CONFIG.FIREBASE_CONFIG;
+        var dbUrl = cfg && cfg.databaseURL;
+
+        if (!dbUrl || dbUrl.indexOf('TBD') !== -1) {
+          console.warn('[lead-form] Firebase not yet provisioned — degraded mode. Captured data:', data);
+          showStatus('success', "Thanks — we'll be in touch within one business day. (Note: backend not yet live; your submission was captured locally.)");
+          form.reset();
+          return;
+        }
+
+        fetch(dbUrl + '/leads.json', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        })
+          .then(function (res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+          })
+          .then(function () {
+            showStatus('success', "Thanks — we'll be in touch within one business day.");
+            form.reset();
+          })
+          .catch(function (err) {
+            console.error('[lead-form] submit failed:', err);
+            showStatus('error', "Something went wrong on our end. Please email team@glindagroup.com directly.");
+          });
+      });
+    })();
+  </script>
 
 </body>
 </html>

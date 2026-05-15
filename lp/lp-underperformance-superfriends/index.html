@@ -84,8 +84,12 @@
 
     /* ---------- Nav ---------- */
     nav {
-      padding: 1.25rem 0;
+      padding: 1.5rem 0;
       border-bottom: 1px solid var(--tgg-hairline);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--bg-1);
     }
     nav .wrapper {
       display: flex;
@@ -99,25 +103,64 @@
       line-height: 0;
     }
     nav a.brand .brand-logo {
-      height: 36px;
+      height: 72px;
       width: auto;
       display: block;
       transition: opacity 0.15s var(--ease-out);
     }
     nav a.brand:hover .brand-logo { opacity: 0.8; }
-    nav .main-link {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--tgg-navy);
-      text-decoration: none;
-      transition: color 0.15s var(--ease-out);
+    nav .nav-actions {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
     }
-    nav .main-link:hover { color: var(--tgg-purple); }
+    nav .btn-nav {
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.55rem 1rem;
+      border-radius: 6px;
+      text-decoration: none;
+      border: 1px solid transparent;
+      transition: background 0.15s var(--ease-out), color 0.15s var(--ease-out), border-color 0.15s var(--ease-out);
+      white-space: nowrap;
+      line-height: 1;
+    }
+    nav .btn-nav.primary {
+      background: var(--tgg-purple);
+      color: var(--bg-1);
+    }
+    nav .btn-nav.primary:hover {
+      background: var(--tgg-purple-darker);
+      color: var(--bg-1);
+    }
+    nav .btn-nav.secondary {
+      color: var(--tgg-purple);
+      border-color: var(--tgg-purple);
+      background: transparent;
+    }
+    nav .btn-nav.secondary:hover {
+      background: var(--tgg-purple);
+      color: var(--bg-1);
+    }
+    @media (max-width: 640px) {
+      nav .btn-nav.secondary { display: none; }
+      nav .btn-nav { font-size: 0.8rem; padding: 0.5rem 0.8rem; }
+      nav a.brand .brand-logo { height: 56px; }
+    }
+    /* Scroll anchor offset so #contact lands clear of the sticky nav */
+    [id] { scroll-margin-top: 130px; }
 
     /* ---------- Hero ---------- */
     .hero {
       padding: var(--section-pad-y) 0 2.5rem;
       text-align: left;
+    }
+    .hero .wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
     }
     .hero h1 {
       font-family: var(--font-display);
@@ -129,10 +172,28 @@
     }
     .hero p.sub {
       font-size: 1.15rem;
-      max-width: 640px;
-      margin-bottom: 2rem;
+      margin-bottom: 0;
       color: var(--tgg-ink);
     }
+    .hero .hero-image {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .hero .hero-image img {
+      width: 100%;
+      max-width: 460px;
+      height: auto;
+      display: block;
+    }
+    .hero .hero-image.empty {
+      min-height: 240px;
+    }
+    @media (max-width: 800px) {
+      .hero .wrapper { grid-template-columns: 1fr; gap: 1.5rem; }
+      .hero .hero-image img { max-width: 320px; margin: 0 auto; }
+    }
+    /* Legacy CTA-row may still appear elsewhere on the page; preserve its layout. */
     .cta-row {
       display: flex;
       flex-wrap: wrap;
@@ -182,6 +243,23 @@
       margin-bottom: 1rem;
     }
 
+
+    /* ---------- Section heading with right-aligned icon ---------- */
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .section-head h2 { margin-bottom: 0; }
+    .section-head .section-icon {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+      color: var(--tgg-purple);
+    }
+    .testimonials .section-head { margin-bottom: 1.75rem; }
     /* ---------- Symptom ---------- */
     .symptom p.intro {
       font-size: 1.05rem;
@@ -640,20 +718,24 @@
       <a href="../../" class="brand" aria-label="Engage Glinda home">
         <img src="../../files/logo.svg" alt="The Glinda Group" class="brand-logo">
       </a>
-      <a href="https://glindagroup.com/" class="main-link" target="_blank" rel="noopener">Explore Glinda →</a>
+      <div class="nav-actions">
+        <a href="#contact" class="btn-nav secondary" data-cta="nav-send">Send us a message</a>
+        <a href="{{CALENDAR_URL}}" target="_blank" rel="noopener" class="btn-nav primary" data-cta="nav-book">Book a call</a>
+      </div>
     </div>
   </nav>
 
   <!-- ===== 1. HERO ===== -->
   <section class="hero">
     <div class="wrapper">
-      <h1>Why do half your people seem checked out?</h1>
-      <p class="sub">Status is unevenly distributed. Performance follows status, not seniority. We rewire who gets visibility.</p>
-      <div class="cta-row">
-        <a href="{{CALENDAR_URL}}" target="_blank" rel="noopener" class="btn btn-primary" data-cta="primary-hero">Book a call</a>
-        <a href="#contact" class="btn btn-secondary" data-cta="secondary-hero">Send us a message</a>
+      <div class="hero-text">
+        <h1>Why do half your people seem checked out?</h1>
+        <p class="sub">Status is unevenly distributed. Performance follows status, not seniority. We rewire who gets visibility.</p>
       </div>
-          </div>
+      <div class="hero-image">
+        <img src="../../files/hero-underperformance.png" alt="" loading="eager">
+      </div>
+    </div>
   </section>
 
 
@@ -671,7 +753,7 @@
   <!-- ===== 2. SYMPTOM ===== -->
   <section class="symptom alt-bg">
     <div class="wrapper">
-      <h2>You might recognize the shape.</h2>
+      <div class="section-head"><h2>You might recognize the shape.</h2><svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg></div>
       <p class="intro">The same three people drive every conversation. Everyone else is on screen, technically present, contributing nothing visible.</p>
       <ul>
         <li><strong>Always-the-same loud voices in meetings.</strong> Three people speak; six people listen; nobody contributes from the listening side.</li>
@@ -684,7 +766,7 @@
   <!-- ===== 3. UNDERNEATH ===== -->
   <section class="underneath">
     <div class="wrapper">
-      <h2>What's underneath.</h2>
+      <div class="section-head"><h2>What's underneath.</h2><svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2L2 8l10 6 10-6-10-6z"/><path d="M2 16l10 6 10-6"/><path d="M2 12l10 6 10-6"/></svg></div>
       <p><span class="pattern-name">Status asymmetry.</span></p>
       <p>Behavior tracks perceived status more reliably than role description. Redistribute status — by changing who gets surfaced — and behavior follows.</p>
       <p>Co-occurs with silent disagreement and backchannel release-valve patterns.</p>
@@ -694,7 +776,7 @@
   <!-- ===== 4. WHAT WE DO ===== -->
   <section class="what-we-do alt-bg">
     <div class="wrapper">
-      <h2>We change the loop, not the symptom.</h2>
+      <div class="section-head"><h2>We change the loop, not the symptom.</h2><svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 0-15-6.7L3 8"/><path d="M3 4v4h4"/><path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"/><path d="M21 20v-4h-4"/></svg></div>
       <div class="cards">
         <div class="card">
           <h3>Workshop: Super Friends</h3>
@@ -739,7 +821,7 @@
   <!-- ===== Testimonials band ===== -->
   <section class="testimonials">
     <div class="wrapper">
-      <h2>What clients say.</h2>
+      <div class="section-head"><h2>What clients say.</h2><svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg></div>
       <div class="testimonials-row">
         <blockquote class="testimonial">
           <p>"We were clear on our development focus for the year. What was much harder was identifying the right partner to work with—one that is innovative and nimble, could bring best practice and industry experience, and keep our team engaged and challenged. A tall order, and one that the Glinda Group knocked out of the park!"</p>
@@ -923,7 +1005,41 @@
   <script>
     // Lead form submit — writes to Firebase RTDB /leads/{push-id} if configured;
     // falls back to a friendly success message in degraded mode (placeholder config).
+    //
+    // UTM persistence (2026-05-15): UTMs are captured from the URL on every page
+    // load and stashed in sessionStorage so internal navigation doesn't strip the
+    // original attribution. At submit time we read URL first, then sessionStorage,
+    // then default to ''. This means a visitor landing on /lp-x/?utm_source=linkedin
+    // who clicks through to /lp-y/ and submits there still carries linkedin
+    // attribution on the lead.
     (function () {
+      var UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+
+      // Stash any UTMs present in the URL into sessionStorage. Runs on every
+      // page load — last entry-with-UTMs wins per session.
+      (function persistUtms() {
+        try {
+          var qs = new URLSearchParams(window.location.search);
+          var snapshot = {};
+          var hasAny = false;
+          UTM_KEYS.forEach(function (k) {
+            var v = qs.get(k) || '';
+            snapshot[k] = v;
+            if (v) hasAny = true;
+          });
+          if (hasAny) sessionStorage.setItem('glinda_utms', JSON.stringify(snapshot));
+        } catch (e) { /* sessionStorage unavailable — silent */ }
+      })();
+
+      function getUtm(key) {
+        var fromUrl = new URLSearchParams(window.location.search).get(key);
+        if (fromUrl) return fromUrl;
+        try {
+          var stash = JSON.parse(sessionStorage.getItem('glinda_utms') || '{}');
+          return stash[key] || '';
+        } catch (e) { return ''; }
+      }
+
       var form = document.getElementById('lead-form');
       var statusEl = document.getElementById('lf-status');
       if (!form) return;
@@ -945,10 +1061,11 @@
           page_slug: 'lp-underperformance-superfriends',
           referrer: document.referrer || '',
           submitted_at: Date.now(),
-          utm_source: new URLSearchParams(window.location.search).get('utm_source') || '',
-          utm_medium: new URLSearchParams(window.location.search).get('utm_medium') || '',
-          utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign') || '',
-          utm_content: new URLSearchParams(window.location.search).get('utm_content') || ''
+          utm_source:   getUtm('utm_source'),
+          utm_medium:   getUtm('utm_medium'),
+          utm_campaign: getUtm('utm_campaign'),
+          utm_content:  getUtm('utm_content'),
+          utm_term:     getUtm('utm_term')
         };
 
         if (!data.name || !data.email || !data.company_size || !data.role || !data.symptom) {
@@ -959,7 +1076,6 @@
         var cfg = window.GLINDA_CONTACT_CONFIG && window.GLINDA_CONTACT_CONFIG.FIREBASE_CONFIG;
         var dbUrl = cfg && cfg.databaseURL;
 
-        // Detect placeholder config — same pattern as review-widget degraded mode.
         if (!dbUrl || dbUrl.indexOf('TBD') !== -1) {
           console.warn('[lead-form] Firebase not yet provisioned — degraded mode. Captured data:', data);
           showStatus('success', "Thanks — we'll be in touch within one business day. (Note: backend not yet live; your submission was captured locally.)");
@@ -967,7 +1083,6 @@
           return;
         }
 
-        // Real submit: POST to RTDB at /leads.json (REST API).
         fetch(dbUrl + '/leads.json', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
