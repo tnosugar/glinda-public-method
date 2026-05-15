@@ -348,6 +348,109 @@
     .form-status.success { display: block; background: rgba(83, 222, 255, 0.12); color: var(--tgg-navy); border: 1px solid var(--tgg-sky); }
     .form-status.error { display: block; background: rgba(230, 57, 70, 0.08); color: #b91c1c; border: 1px solid #fca5a5; }
 
+
+    /* ---------- Science & Whimsy (founders) ---------- */
+    .founders {
+      padding: 5rem 0;
+      background: var(--bg-1);
+      border-top: 1px solid var(--tgg-hairline);
+    }
+    .founders .intro {
+      text-align: center;
+      max-width: 680px;
+      margin: 0 auto 3rem;
+    }
+    .founders .eyebrow {
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--tgg-purple);
+      margin-bottom: 0.75rem;
+    }
+    .founders h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.85rem, 4vw, 2.5rem);
+      font-weight: 700;
+      line-height: 1.15;
+      color: var(--tgg-navy);
+      margin-bottom: 1rem;
+      letter-spacing: -0.01em;
+    }
+    .founders .lede {
+      font-size: 1.05rem;
+      color: var(--tgg-ink);
+      line-height: 1.55;
+    }
+    .founder-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.75rem;
+      max-width: 880px;
+      margin: 0 auto;
+    }
+    .founder {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 2rem 1.75rem;
+      background: var(--bg-1);
+      border: 1px solid var(--tgg-hairline);
+      border-radius: 12px;
+    }
+    .founder-head {
+      display: flex;
+      gap: 1.25rem;
+      align-items: center;
+    }
+    .founder-photo {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 2px solid var(--tgg-tint-cream);
+    }
+    .founder-name {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--tgg-navy);
+      margin: 0 0 0.2rem;
+      line-height: 1.2;
+    }
+    .founder-role {
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--tgg-purple);
+    }
+    .founder-bio {
+      font-size: 0.95rem;
+      line-height: 1.55;
+      color: var(--tgg-ink);
+      margin: 0;
+    }
+    .founder-link {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--tgg-purple);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      margin-top: auto;
+    }
+    .founder-link:hover { color: var(--tgg-purple-darker); text-decoration: underline; }
+    @media (max-width: 800px) {
+      .founder-grid { grid-template-columns: 1fr; }
+      .founder-photo { width: 80px; height: 80px; }
+    }
+
     /* ---------- Footer ---------- */
     footer {
       padding: 2rem 0;
@@ -537,7 +640,7 @@
       <a href="../../" class="brand" aria-label="Engage Glinda home">
         <img src="../../files/logo.svg" alt="The Glinda Group" class="brand-logo">
       </a>
-      <a href="https://glindagroup.com/" class="main-link">Explore Glinda →</a>
+      <a href="https://glindagroup.com/" class="main-link" target="_blank" rel="noopener">Explore Glinda →</a>
     </div>
   </nav>
 
@@ -649,6 +752,43 @@
       </div>
     </div>
   </section>
+  <!-- ===== SCIENCE & WHIMSY — founders ===== -->
+  <section class="founders">
+    <div class="wrapper">
+      <div class="intro">
+        <div class="eyebrow">Science &amp; Whimsy</div>
+        <h2>Two ingredients. Behavioral science and unrepentant whimsy.</h2>
+        <p class="lede">Glinda was founded on the suspicion that organizations change fastest when somebody in the room takes the rigor seriously and the room itself a little less so. Meet the two people who built a practice around exactly that.</p>
+      </div>
+
+      <div class="founder-grid">
+        <article class="founder">
+          <div class="founder-head">
+            <img class="founder-photo" src="../../files/laura-martin.png" alt="Laura Martin">
+            <div>
+              <h3 class="founder-name">Laura Martin, MBA</h3>
+              <div class="founder-role">Co-Founder, CEO</div>
+            </div>
+          </div>
+          <p class="founder-bio">Laura's work is proof that you don't need a spotlight to create lasting change. From her years at Target to her leadership in tech and HR, she's helped build teams where people grow, businesses weather storms, and the numbers improve almost by accident — because people come first. She doesn't claim to have all the answers, but never stops searching for better ones.</p>
+          <a class="founder-link" href="https://www.linkedin.com/in/lauraemartin1/" target="_blank" rel="noopener">Laura on LinkedIn →</a>
+        </article>
+
+        <article class="founder">
+          <div class="founder-head">
+            <img class="founder-photo" src="../../files/jordan-birnbaum.png" alt="Jordan Scott Birnbaum">
+            <div>
+              <h3 class="founder-name">Jordan Scott Birnbaum, MA</h3>
+              <div class="founder-role">Co-Founder, Thinker/Doer</div>
+            </div>
+          </div>
+          <p class="founder-bio">Thinker / Doer is an apt description of a career defined by insatiable curiosity and a bias for action. From finance to internet to hospitality to HR tech, Jordan has a knack for influencing people and building new things. Despite a long list of accomplishments, what he actually thinks about are the connections between them.</p>
+          <a class="founder-link" href="https://www.linkedin.com/company/jordan-birnbaum-consulting/" target="_blank" rel="noopener">Jordan on LinkedIn →</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== 6. CTA ===== -->
   <section class="cta-block">
     <div class="wrapper">
@@ -771,6 +911,7 @@
       </div>
     </div>
   </section>
+
 
   <footer>
     <div class="wrapper">
