@@ -321,37 +321,6 @@
     }
     .phaseware-embed { /* v2, empty in v1 */ }
 
-    /* ---------- Outcomes ---------- */
-    .outcomes-strip {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 1.5rem;
-      margin-top: 0.5rem;
-    }
-    .outcome {
-      text-align: left;
-      padding: 0.5rem 0;
-    }
-    .outcome .number {
-      font-family: var(--font-display);
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: var(--tgg-purple);
-      line-height: 1.1;
-      margin-bottom: 0.35rem;
-    }
-    .outcome .label {
-      font-size: 0.9rem;
-      color: var(--tgg-ink);
-      line-height: 1.35;
-    }
-    .outcomes-caveat {
-      margin-top: 1.5rem;
-      font-size: 0.85rem;
-      color: var(--tgg-ink-muted);
-      font-style: italic;
-    }
-
     /* ---------- CTA ---------- */
     .cta-block {
       background: var(--tgg-navy);
@@ -801,7 +770,7 @@
   <!-- ===== 2. SYMPTOM ===== -->
   <section class="symptom alt-bg">
     <div class="wrapper">
-      <div class="section-head"><h2>You might recognize the shape.</h2><svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg></div>
+      <div class="section-head"><h2>You might recognize the pattern.</h2><svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg></div>
       <p class="intro">Your re-org created focused teams. Now you can't get them to ship a single feature together. Identity overrode org chart.</p>
       <ul>
         <li><strong>Cross-functional projects that quietly fork into two parallel deliveries.</strong> Both teams ship something. The thing the company needed gets neither version.</li>
@@ -814,7 +783,7 @@
   <!-- ===== 3. UNDERNEATH ===== -->
   <section class="underneath">
     <div class="wrapper">
-      <div class="section-head"><h2>What's underneath.</h2><svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2L2 8l10 6 10-6-10-6z"/><path d="M2 16l10 6 10-6"/><path d="M2 12l10 6 10-6"/></svg></div>
+      <div class="section-head"><h2>Why is this happening?</h2><svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2L2 8l10 6 10-6-10-6z"/><path d="M2 16l10 6 10-6"/><path d="M2 12l10 6 10-6"/></svg></div>
       <p><span class="pattern-name">Identity-driven silo formation.</span></p>
       <p>Small-group identity formation is the psychological default. Cross-team identity is something you build deliberately. Otherwise you don't have it.</p>
       <p>Co-occurs with bad-decisions and backchannel-release-valve patterns.</p>
@@ -824,7 +793,7 @@
   <!-- ===== 4. WHAT WE DO ===== -->
   <section class="what-we-do alt-bg">
     <div class="wrapper">
-      <div class="section-head"><h2>We change the loop, not the symptom.</h2><svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 0-15-6.7L3 8"/><path d="M3 4v4h4"/><path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"/><path d="M21 20v-4h-4"/></svg></div>
+      <div class="section-head"><h2>We build cross-team identity, not just cross-team time.</h2><svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 0-15-6.7L3 8"/><path d="M3 4v4h4"/><path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"/><path d="M21 20v-4h-4"/></svg></div>
       <div class="cards">
         <div class="card">
           <h3>Workshop: Collaboration Nation</h3>
@@ -844,28 +813,6 @@
   </section>
 
   <!-- ===== 5. OUTCOMES ===== -->
-  <section class="outcomes">
-    <div class="wrapper">
-      <h2>The metric you started with, moving.</h2>
-      <div class="outcomes-strip">
-        <div class="outcome">
-          <div class="number">+62%</div>
-          <div class="label">Cross-team commits per sprint after engagement.</div>
-        </div>
-        <div class="outcome">
-          <div class="number">−45%</div>
-          <div class="label">"Us and them" language in retro transcripts.</div>
-        </div>
-        <div class="outcome">
-          <div class="number">85%</div>
-          <div class="label">Self-reported "I know what the other team is working on" responses.</div>
-        </div>
-      </div>
-      <p class="outcomes-caveat">Indicative figures from past engagements; your numbers will be measured against your baseline.</p>
-    </div>
-  </section>
-
-
   <!-- ===== Testimonials band ===== -->
   <section class="testimonials">
     <div class="wrapper">
@@ -888,7 +835,7 @@
       <div class="intro">
         <div class="eyebrow">Science &amp; Whimsy</div>
         <h2>Two ingredients. Behavioral science and unrepentant whimsy.</h2>
-        <p class="lede">Glinda was founded on the suspicion that organizations change fastest when somebody in the room takes the rigor seriously and the room itself a little less so. Meet the two people who built a practice around exactly that.</p>
+        <p class="lede">Glinda was founded on the idea that organizations change fastest when scientifically validated techniques become fun. Meet the two people who built a practice around exactly that.</p>
       </div>
 
       <div class="founder-grid">
@@ -922,7 +869,7 @@
   <!-- ===== 6. CTA ===== -->
   <section class="cta-block">
     <div class="wrapper">
-      <h2>Tell us what's not working.</h2>
+      <h2>Where does it hurt?</h2>
       <p class="cta-line">We'll tell you what pattern is likely underneath, and what an intervention would look like for your context.</p>
       <div class="cta-row">
         <a href="{{CALENDAR_URL}}" target="_blank" rel="noopener" class="btn btn-primary" data-cta="primary-footer">Book a call</a>
@@ -999,7 +946,7 @@
         <a class="card" href="../lp-decisions-jadm/">
           <h3>Why does your team keep making the wrong call?</h3>
           <div class="meta">
-            <span class="pattern">Hidden self-interest</span>
+            <span class="pattern">Biases and Heuristics</span>
             <span class="workshop">Workshop: JA(d)M Session</span>
           </div>
         </a>
