@@ -484,22 +484,10 @@
   
     .hero.hero-variant-b .hero-image { display: flex; justify-content: center; margin-top: 2.5rem; }
     .hero.hero-variant-b .hero-image img { width: 100%; max-width: 420px; height: auto; }
-  
-    /* ----- Lottie animation + PNG fallback ----- */
-    .lottie-fallback { display: none; width: 100%; height: auto; }
-    /* If lottie-player custom element fails to register (CDN down), show PNG */
-    lottie-player:not(:defined) { display: none; }
-    lottie-player:not(:defined) + .lottie-fallback { display: block; }
-    /* Honor user motion preference */
-    @media (prefers-reduced-motion: reduce) {
-      lottie-player { display: none !important; }
-      lottie-player + .lottie-fallback { display: block !important; }
-    }
-    /* Hero placement: lottie-player inherits same sizing as the img it replaced */
+    /* ----- Lottie animation sizing ----- */
     .hero.hero-variant-a .hero-image lottie-player { width: 100%; max-width: 500px; aspect-ratio: 1; display: block; }
     .hero.hero-variant-b .hero-image lottie-player { width: 100%; max-width: 420px; aspect-ratio: 1; display: block; margin: 0 auto; }
     .hero.hero-variant-c .hero-eyebrow lottie-player { width: 120px; height: 120px; display: block; }
-    /* Distributed placements: meditation + lotus */
     .home-illus lottie-player { width: 100%; max-width: 260px; aspect-ratio: 1; display: block; margin: 0 auto; }
 
   </style>
@@ -538,7 +526,7 @@
       <h1>Where does it hurt?</h1>
       <p class="sub">Behavioral-science consultancy for organizations whose people performances aren't quite landing. Pick the symptom that fits. We'll show you what's behind it, what to do about it, and then build you a bespoke software tool that ensures the intended behaviors stick.</p>
       <div class="hero-image">
-        <lottie-player src="../files/Tgg_Body.json" speed="1" loop autoplay aria-label="Animated hand illustration"></lottie-player><img class="lottie-fallback" src="../files/Tgg_Body.png" alt="" loading="eager">
+        <lottie-player src="../files/Tgg_Body.json" speed="1" aria-label="Animated hand illustration"></lottie-player>
       </div>
     </div>
   </section>
@@ -615,7 +603,7 @@
   <section class="form-block" id="contact">
     <div class="wrapper">
       <div class="home-illus home-illus-lotus" style="display:flex; justify-content:center; margin-bottom:2rem;">
-        <lottie-player src="../files/Tgg_Soul.json" speed="1" loop autoplay aria-label="Animated lotus illustration"></lottie-player><img class="lottie-fallback" src="../files/Tgg_Soul.png" alt="" loading="lazy">
+        <lottie-player src="../files/Tgg_Soul.json" speed="1" aria-label="Animated lotus illustration"></lottie-player>
       </div>
       <div class="form-intro">
         <h2>Tell us what's not working.</h2>
@@ -669,7 +657,7 @@
   <section class="founders">
     <div class="wrapper">
       <div class="home-illus home-illus-meditation" style="display:flex; justify-content:center; margin-bottom:2rem;">
-        <lottie-player src="../files/Tgg_Mind.json" speed="1" loop autoplay aria-label="Animated meditating figure illustration"></lottie-player><img class="lottie-fallback" src="../files/Tgg_Mind.png" alt="" loading="lazy">
+        <lottie-player src="../files/Tgg_Mind.json" speed="1" aria-label="Animated meditating figure illustration"></lottie-player>
       </div>
       <div class="intro">
         <div class="eyebrow">Science &amp; Whimsy</div>
@@ -820,5 +808,42 @@
     })();
   </script>
 
+  <script>
+  (function () {
+    // Play each lottie-player once, when it enters the viewport.
+    // Honors prefers-reduced-motion (no autoplay -> first frame stays visible).
+    if (!('IntersectionObserver' in window)) {
+      document.querySelectorAll('lottie-player').forEach(function (p) {
+        try { p.play(); } catch (e) {}
+      });
+      return;
+    }
+    var prefersReduce = window.matchMedia &&
+                        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduce) return;
+    function playWhenReady(el) {
+      if (typeof el.play !== 'function') {
+        el.addEventListener('ready', function () { try { el.play(); } catch (e) {} },
+                            { once: true });
+        return;
+      }
+      try { el.play(); } catch (e) {
+        el.addEventListener('ready', function () { try { el.play(); } catch (e2) {} },
+                            { once: true });
+      }
+    }
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          playWhenReady(entry.target);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.25 });
+    document.querySelectorAll('lottie-player').forEach(function (el) {
+      observer.observe(el);
+    });
+  })();
+  </script>
 </body>
 </html>
