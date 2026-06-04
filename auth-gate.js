@@ -81,7 +81,13 @@
   }
 
   // === Bootstrap Firebase Auth ===
-  var FB_VERSION = '9.23.0';
+  // v10 compat (wraps the same v10 modular core as review-mode.js's v10 imports).
+  // Using the same major version ensures both SDKs share the IndexedDB auth
+  // persistence schema, so review-mode.js's v10 modular getAuth() can pick up
+  // the session that auth-gate.js's compat SDK established at login.
+  // v9.x compat used a different persistence layout, which left review-mode.js
+  // unable to find the signed-in user even after sharing the [DEFAULT] app.
+  var FB_VERSION = '10.7.0';
   var FB_BASE = 'https://www.gstatic.com/firebasejs/' + FB_VERSION + '/';
 
   loadScript(FB_BASE + 'firebase-app-compat.js', function () {
