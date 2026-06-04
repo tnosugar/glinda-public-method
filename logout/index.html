@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Signing out · The Glinda Group</title>
+  <style>
+    body {
+      font-family: 'Open Sans', system-ui, sans-serif;
+      color: #41505A;
+      background: linear-gradient(135deg, #8705E4 0%, #01055E 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 1.5rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 18px 48px rgba(1,5,94,0.18);
+      padding: 2rem 2.5rem;
+      text-align: center;
+      max-width: 360px;
+    }
+    .card h1 {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      color: #01055E;
+      font-size: 1.3rem;
+      margin: 0 0 0.5rem;
+    }
+    .card p { margin: 0 0 1rem; color: #7E8C9F; font-size: 0.95rem; }
+    .card a { color: #8705E4; text-decoration: none; font-weight: 500; }
+    .card a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h1>Signing out…</h1>
+  <p id="msg">One moment.</p>
+  <p><a href="../">← Back to home</a></p>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script>
+(function () {
+  var FIREBASE_CONFIG = {
+    apiKey:            "AIzaSyAC3f0IH9-s7XU9fTE3jbk7Bhfn20uTIdY",
+    authDomain:        "glinda-website.firebaseapp.com",
+    databaseURL:       "https://glinda-website-default-rtdb.firebaseio.com",
+    projectId:         "glinda-website",
+    storageBucket:     "glinda-website.firebasestorage.app",
+    messagingSenderId: "244199801855",
+    appId:             "1:244199801855:web:82838197aab888d894ddca",
+    measurementId:     "G-R8YJ0J0FC2"
+  };
+  if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+  firebase.auth().signOut()
+    .then(function () {
+      document.getElementById('msg').textContent = 'Signed out. Redirecting…';
+      setTimeout(function () { window.location.replace('../'); }, 600);
+    })
+    .catch(function (err) {
+      document.getElementById('msg').textContent = 'Sign-out error: ' + (err.message || err.code);
+    });
+})();
+</script>
+
+</body>
+</html>

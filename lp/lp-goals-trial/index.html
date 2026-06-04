@@ -27,11 +27,11 @@
   <link rel="icon" type="image/png" sizes="300x300" href="../../files/favicon-300.png">
   <link rel="icon" type="image/png" sizes="150x150" href="../../files/favicon-150.png">
 
-  <!-- Review widget, inert by default; activates only with ?review=1.
-       The review-bootstrap.js also injects a floating Comments button per
-       library/features/review-widget/inert-entry-button.md. -->
-  <script src="../../contact-form.config.js"></script>
-  <script src="../../review-bootstrap.js" defer></script>
+  <!-- auth-gate.js checks Firebase Auth state on load. Only allow-listed
+       team accounts (per public/method/AUTH_SETUP.md) get the review-widget
+       scripts dynamically injected. Public visitors see no review-widget
+       references in the page source. -->
+  <script src="../../auth-gate.js" defer></script>
   <script src="../../sidepane.js" defer></script>
 
   <style>

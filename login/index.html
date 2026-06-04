@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Team sign in · The Glinda Group</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" sizes="300x300" href="../files/favicon-300.png">
+  <link rel="icon" type="image/png" sizes="150x150" href="../files/favicon-150.png">
+
+  <style>
+    :root {
+      --tgg-purple: #8705E4;
+      --tgg-purple-darker: #6804B5;
+      --tgg-navy: #01055E;
+      --tgg-sky: #53DEFF;
+      --tgg-off-white: #F5F5F5;
+      --tgg-ink: #41505A;
+      --tgg-ink-muted: #7E8C9F;
+      --tgg-hairline: #CDDCDF;
+      --tgg-tint-cream: #EFF5F7;
+      --feedback-red: #E63946;
+      --font-display: 'Space Grotesk', system-ui, sans-serif;
+      --font-body: 'Open Sans', system-ui, sans-serif;
+      --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font-body);
+      color: var(--tgg-ink);
+      background: linear-gradient(135deg, var(--tgg-purple) 0%, var(--tgg-navy) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+      -webkit-font-smoothing: antialiased;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 18px 48px rgba(1, 5, 94, 0.18);
+      padding: 2.5rem 2.25rem 2rem;
+      width: 100%;
+      max-width: 420px;
+    }
+    .brand {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.75rem;
+    }
+    .brand img { height: 48px; width: auto; }
+    h1 {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--tgg-navy);
+      letter-spacing: -0.01em;
+      margin-bottom: 0.4rem;
+      text-align: center;
+    }
+    .sub {
+      text-align: center;
+      color: var(--tgg-ink-muted);
+      font-size: 0.95rem;
+      margin-bottom: 1.75rem;
+    }
+    form { display: grid; gap: 1rem; }
+    label {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--tgg-navy);
+      display: block;
+      margin-bottom: 0.35rem;
+      letter-spacing: 0.01em;
+    }
+    input[type="email"], input[type="password"] {
+      font-family: var(--font-body);
+      font-size: 1rem;
+      width: 100%;
+      padding: 0.75rem 0.9rem;
+      border: 1px solid var(--tgg-hairline);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--tgg-ink);
+      transition: border-color 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
+    }
+    input[type="email"]:focus, input[type="password"]:focus {
+      outline: none;
+      border-color: var(--tgg-purple);
+      box-shadow: 0 0 0 3px rgba(135, 5, 228, 0.12);
+    }
+    .btn {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 1rem;
+      padding: 0.85rem 1.25rem;
+      border: 2px solid var(--tgg-purple);
+      border-radius: 8px;
+      background: var(--tgg-purple);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.15s var(--ease-out), border-color 0.15s var(--ease-out);
+    }
+    .btn:hover { background: var(--tgg-purple-darker); border-color: var(--tgg-purple-darker); }
+    .btn:disabled { opacity: 0.65; cursor: wait; }
+    .status {
+      min-height: 1.5rem;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      text-align: center;
+    }
+    .status.error { color: var(--feedback-red); }
+    .status.info { color: var(--tgg-ink-muted); }
+    .forgot {
+      text-align: center;
+      margin-top: 1.25rem;
+      font-size: 0.85rem;
+    }
+    .forgot a {
+      color: var(--tgg-purple);
+      text-decoration: none;
+    }
+    .forgot a:hover { text-decoration: underline; }
+    .footnote {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.78rem;
+      color: var(--tgg-ink-muted);
+    }
+    .footnote a {
+      color: var(--tgg-ink-muted);
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+
+  <div class="brand">
+    <img src="../files/logo.svg" alt="The Glinda Group">
+  </div>
+
+  <h1>Team sign in</h1>
+  <p class="sub">Access the review-widget comments module.</p>
+
+  <form id="login-form" novalidate>
+    <div>
+      <label for="lf-email">Email</label>
+      <input type="email" id="lf-email" name="email" autocomplete="email" required autofocus>
+    </div>
+    <div>
+      <label for="lf-password">Password</label>
+      <input type="password" id="lf-password" name="password" autocomplete="current-password" required>
+    </div>
+    <button type="submit" class="btn" id="lf-submit">Sign in</button>
+    <div class="status" id="lf-status" role="status" aria-live="polite"></div>
+  </form>
+
+  <div class="forgot">
+    <a href="#" id="lf-forgot">Forgot your password?</a>
+  </div>
+
+  <div class="footnote">
+    <a href="../">← Back to engage.glindagroup.com</a>
+  </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var FIREBASE_CONFIG = {
+    apiKey:            "AIzaSyAC3f0IH9-s7XU9fTE3jbk7Bhfn20uTIdY",
+    authDomain:        "glinda-website.firebaseapp.com",
+    databaseURL:       "https://glinda-website-default-rtdb.firebaseio.com",
+    projectId:         "glinda-website",
+    storageBucket:     "glinda-website.firebasestorage.app",
+    messagingSenderId: "244199801855",
+    appId:             "1:244199801855:web:82838197aab888d894ddca",
+    measurementId:     "G-R8YJ0J0FC2"
+  };
+
+  if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+  var auth = firebase.auth();
+
+  // If already signed in, bounce to home (auth-gate.js there will pick it up)
+  auth.onAuthStateChanged(function (user) {
+    if (user && user.email) {
+      window.location.replace('../');
+    }
+  });
+
+  var form     = document.getElementById('login-form');
+  var emailEl  = document.getElementById('lf-email');
+  var passEl   = document.getElementById('lf-password');
+  var submitEl = document.getElementById('lf-submit');
+  var status   = document.getElementById('lf-status');
+  var forgot   = document.getElementById('lf-forgot');
+
+  function setStatus(msg, kind) {
+    status.textContent = msg || '';
+    status.className = 'status' + (kind ? ' ' + kind : '');
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = (emailEl.value || '').trim();
+    var pass  = passEl.value || '';
+    if (!email || !pass) {
+      setStatus('Please enter both email and password.', 'error');
+      return;
+    }
+    submitEl.disabled = true;
+    setStatus('Signing in…', 'info');
+    auth.signInWithEmailAndPassword(email, pass)
+      .then(function () {
+        setStatus('Signed in. Redirecting…', 'info');
+        window.location.replace('../');
+      })
+      .catch(function (err) {
+        submitEl.disabled = false;
+        var msg = 'Sign-in failed.';
+        if (err.code === 'auth/invalid-credential' ||
+            err.code === 'auth/wrong-password' ||
+            err.code === 'auth/user-not-found') {
+          msg = 'Email or password is incorrect.';
+        } else if (err.code === 'auth/too-many-requests') {
+          msg = 'Too many attempts. Try again in a few minutes.';
+        } else if (err.code === 'auth/network-request-failed') {
+          msg = 'Network error. Check your connection and try again.';
+        } else if (err.message) {
+          msg = 'Sign-in failed: ' + err.message;
+        }
+        setStatus(msg, 'error');
+      });
+  });
+
+  forgot.addEventListener('click', function (e) {
+    e.preventDefault();
+    var email = (emailEl.value || '').trim();
+    if (!email) {
+      setStatus('Enter your email above, then click "Forgot password" again.', 'info');
+      emailEl.focus();
+      return;
+    }
+    auth.sendPasswordResetEmail(email)
+      .then(function () {
+        setStatus('Password-reset email sent. Check your inbox.', 'info');
+      })
+      .catch(function (err) {
+        setStatus('Could not send reset email: ' + (err.message || err.code), 'error');
+      });
+  });
+})();
+</script>
+
+</body>
+</html>
