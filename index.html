@@ -23,6 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 
   <link rel="icon" type="image/png" sizes="300x300" href="./files/favicon-300.png">
   <link rel="icon" type="image/png" sizes="150x150" href="./files/favicon-150.png">
@@ -486,6 +487,13 @@
       font-weight: 500;
       margin-bottom: 0.25rem;
     }
+  
+    /* ----- Lottie animations on home (Variant B layout) ----- */
+    .hero .hero-image { display: flex; justify-content: center; margin-top: 2.5rem; }
+    .hero .hero-image lottie-player { width: 100%; max-width: 420px; aspect-ratio: 1; display: block; margin: 0 auto; }
+    .home-illus { display: flex; justify-content: center; margin-bottom: 2rem; }
+    .home-illus lottie-player { width: 100%; max-width: 260px; aspect-ratio: 1; display: block; margin: 0 auto; }
+
   </style>
 </head>
 <body>
@@ -507,6 +515,9 @@
     <div class="wrapper">
       <h1>Where does it hurt?</h1>
       <p class="sub">Behavioral-science consultancy for organizations whose people performances aren't quite landing. Pick the symptom that fits. We'll show you what's behind it, what to do about it, and then build you a bespoke software tool that ensures the intended behaviors stick.</p>
+      <div class="hero-image">
+        <lottie-player src="./files/Tgg_Body.json" speed="1" aria-label="Animated hand illustration"></lottie-player>
+      </div>
     </div>
   </section>
 
@@ -581,6 +592,9 @@
   <!-- ===== FORM: tell us what's not working ===== -->
   <section class="form-block" id="contact">
     <div class="wrapper">
+      <div class="home-illus home-illus-lotus">
+        <lottie-player src="./files/Tgg_Soul.json" speed="1" aria-label="Animated lotus illustration"></lottie-player>
+      </div>
       <div class="form-intro">
         <h2>Tell us what's not working.</h2>
         <p class="form-sub">Describe the symptom in a couple of sentences. We'll come back within one business day with a read on what's underneath.</p>
@@ -632,6 +646,9 @@
   <!-- ===== SCIENCE & WHIMSY: founders ===== -->
   <section class="founders">
     <div class="wrapper">
+      <div class="home-illus home-illus-meditation">
+        <lottie-player src="./files/Tgg_Mind.json" speed="1" aria-label="Animated meditating figure illustration"></lottie-player>
+      </div>
       <div class="intro">
         <div class="eyebrow">Science &amp; Whimsy</div>
         <h2>Two ingredients. Behavioral science and unrepentant whimsy.</h2>
@@ -781,5 +798,30 @@
     })();
   </script>
 
+  <script>
+    (function () {
+      if (!('IntersectionObserver' in window)) {
+        document.querySelectorAll('lottie-player').forEach(function (p) { try { p.play(); } catch (e) {} });
+        return;
+      }
+      var prefersReduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduce) return;
+      function playWhenReady(el) {
+        if (typeof el.play !== 'function') {
+          el.addEventListener('ready', function () { try { el.play(); } catch (e) {} }, { once: true });
+          return;
+        }
+        try { el.play(); } catch (e) {
+          el.addEventListener('ready', function () { try { el.play(); } catch (e2) {} }, { once: true });
+        }
+      }
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) { playWhenReady(entry.target); observer.unobserve(entry.target); }
+        });
+      }, { threshold: 0.25 });
+      document.querySelectorAll('lottie-player').forEach(function (el) { observer.observe(el); });
+    })();
+  </script>
 </body>
 </html>
