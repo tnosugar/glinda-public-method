@@ -18,7 +18,7 @@
 //
 // Source-of-truth: do NOT hand-edit. Re-compose via the library.
 
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+import { initializeApp, getApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
 import {
   getDatabase, ref, push, update, remove, onValue
 } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
@@ -330,7 +330,13 @@ function initRtdb() {
     return false;
   }
   try {
-    const app = initializeApp(fcfg, 'review-widget');
+    // Share the [DEFAULT] Firebase app that auth-gate.js signed the user
+    // into. Pre-auth-gate the widget created its own named 'review-widget'
+    // app for isolation, but that app had no authenticated user, so once
+    // the RTDB rules started requiring auth (2026-06-03) all reads/writes
+    // failed with permission_denied. Reusing the default app shares the
+    // signed-in session, so getDatabase() inherits the auth context.
+    const app = getApps().length ? getApp() : initializeApp(fcfg);
     state.db = getDatabase(app);
     return true;
   } catch (err) {
