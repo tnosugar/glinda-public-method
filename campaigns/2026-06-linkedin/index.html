@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" type="image/png" sizes="300x300" href="../../files/favicon-300.png">
+<title>Campaign preview · Glinda LinkedIn · team only</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* LinkedIn-ish palette */
+  :root {
+    --li-bg: #f4f2ee;
+    --li-card: #ffffff;
+    --li-blue: #0a66c2;
+    --li-blue-dark: #004182;
+    --li-text: #38434f;
+    --li-text-muted: #5e6b78;
+    --li-border: #e0dfdc;
+    --li-divider: #e9e5df;
+    --li-hover: #f3f2ef;
+    --li-link-preview-bg: #eef3f8;
+
+    /* Glinda brand for the filter bar */
+    --tgg-purple: #8705E4;
+    --tgg-navy: #01055E;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+  body {
+    font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--li-bg);
+    color: var(--li-text);
+    line-height: 1.43;
+    font-size: 14px;
+    padding: 0;
+    margin: 0;
+  }
+  .topbar {
+    background: linear-gradient(135deg, var(--tgg-purple), var(--tgg-navy));
+    color: #fff;
+    padding: 1.5rem 1.5rem 1.25rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .topbar .wrap { max-width: 720px; margin: 0 auto; }
+  .topbar h1 { font-family: 'Source Sans 3', sans-serif; font-size: 1.45rem; font-weight: 700; margin-bottom: 0.3rem; letter-spacing: -0.01em; }
+  .topbar p { font-size: 0.95rem; opacity: 0.9; margin-bottom: 0.85rem; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.85rem; }
+  .filter-group { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+  .filter-group .label {
+    color: #fff; opacity: 0.7;
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; margin-right: 0.35rem;
+  }
+  .chip {
+    background: rgba(255,255,255,0.10);
+    color: #fff; font-size: 0.8rem;
+    padding: 0.28rem 0.7rem;
+    border: 1px solid rgba(255,255,255,0.28);
+    border-radius: 99px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    font-weight: 500;
+  }
+  .chip:hover { background: rgba(255,255,255,0.18); }
+  .chip.active { background: #fff; color: var(--tgg-purple); border-color: #fff; font-weight: 600; }
+  .filter-group + .filter-group { margin-left: 0.6rem; padding-left: 0.6rem; border-left: 1px solid rgba(255,255,255,0.2); }
+
+  .feed { max-width: 552px; margin: 1.5rem auto 4rem; padding: 0 0.75rem; }
+
+  .post-card {
+    background: var(--li-card);
+    border-radius: 8px;
+    border: 1px solid var(--li-border);
+    margin-bottom: 0.85rem;
+    overflow: hidden;
+    transition: opacity 0.15s;
+  }
+  .post-card.hidden { display: none; }
+
+  .post-head {
+    display: flex; align-items: flex-start;
+    padding: 0.8rem 1rem 0.5rem;
+  }
+  .avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    overflow: hidden; flex-shrink: 0;
+    margin-right: 0.6rem;
+    background: var(--li-divider);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .avatar.company {
+    border-radius: 4px;
+    background: linear-gradient(135deg, var(--tgg-purple), var(--tgg-navy));
+    color: #fff; font-weight: 700;
+  }
+  .avatar.company img { width: 70%; height: auto; }
+
+  .head-text { flex: 1; min-width: 0; }
+  .head-name {
+    font-weight: 700; color: var(--li-text);
+    font-size: 0.92rem; line-height: 1.25;
+    display: inline-flex; align-items: center; gap: 0.3rem;
+  }
+  .head-name .badge { color: var(--li-blue); }
+  .head-headline {
+    color: var(--li-text-muted);
+    font-size: 0.75rem; line-height: 1.3;
+    margin-top: 0.1rem;
+    max-height: 1.7em; overflow: hidden;
+  }
+  .head-time {
+    color: var(--li-text-muted);
+    font-size: 0.72rem; margin-top: 0.15rem;
+  }
+
+  .post-body {
+    padding: 0.25rem 1rem 0.75rem;
+    font-size: 0.92rem;
+    color: var(--li-text);
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+  .post-body .hook {
+    font-weight: 700;
+    display: block;
+    margin-bottom: 0.4rem;
+  }
+  .post-body p { margin-bottom: 0.5rem; }
+  .post-body p:last-child { margin-bottom: 0; }
+
+  .link-preview {
+    display: block;
+    text-decoration: none;
+    color: var(--li-text);
+    background: var(--li-link-preview-bg);
+    border-top: 1px solid var(--li-divider);
+    border-bottom: 1px solid var(--li-divider);
+    overflow: hidden;
+    margin: 0.25rem 0;
+  }
+  .link-preview:hover { background: #e3edf6; }
+  .link-preview .lp-image {
+    width: 100%; aspect-ratio: 1200 / 630;
+    background: linear-gradient(135deg, var(--tgg-purple), var(--tgg-navy)) center/cover no-repeat;
+    background-size: cover;
+    display: block;
+  }
+  .link-preview .lp-meta { padding: 0.7rem 1rem 0.85rem; }
+  .link-preview .lp-title { font-weight: 600; font-size: 0.95rem; color: var(--li-text); line-height: 1.35; margin-bottom: 0.25rem; }
+  .link-preview .lp-desc { font-size: 0.8rem; color: var(--li-text-muted); line-height: 1.4; max-height: 2.7em; overflow: hidden; }
+  .link-preview .lp-url { font-size: 0.72rem; color: var(--li-text-muted); margin-top: 0.4rem; text-transform: lowercase; letter-spacing: 0.01em; }
+
+  .post-stats {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.55rem 1rem 0.4rem;
+    font-size: 0.78rem;
+    color: var(--li-text-muted);
+    border-top: 0;
+  }
+  .post-stats .reactions { display: flex; align-items: center; gap: 0.3rem; }
+  .reaction-dots {
+    display: inline-flex; align-items: center;
+  }
+  .reaction-dots .dot {
+    width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid #fff;
+    display: inline-block;
+    margin-left: -4px;
+  }
+  .reaction-dots .dot:first-child { margin-left: 0; }
+  .dot.r-like { background: var(--li-blue); }
+  .dot.r-celebrate { background: #6dae4f; }
+  .dot.r-insight { background: #c37d16; }
+
+  .post-actions {
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+    border-top: 1px solid var(--li-divider);
+  }
+  .post-action {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0.4rem;
+    padding: 0.65rem 0.5rem;
+    color: var(--li-text-muted);
+    font-size: 0.82rem; font-weight: 600;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .post-action:hover { background: var(--li-hover); }
+  .post-action svg { width: 18px; height: 18px; fill: currentColor; }
+
+  /* Section divider between LPs in feed */
+  .lp-divider {
+    text-align: center;
+    color: var(--li-text-muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 1.5rem 0 0.85rem;
+    font-weight: 600;
+  }
+  .lp-divider::before, .lp-divider::after {
+    content: ''; display: inline-block; width: 2.5rem; height: 1px; background: var(--li-border); vertical-align: middle; margin: 0 0.6rem;
+  }
+  .lp-divider.hidden { display: none; }
+
+  .empty-state {
+    text-align: center;
+    color: var(--li-text-muted);
+    padding: 4rem 1rem;
+  }
+
+  @media (max-width: 600px) {
+    .topbar { padding: 1.25rem 1rem 1rem; }
+    .topbar h1 { font-size: 1.2rem; }
+    .feed { padding: 0 0.5rem; }
+    .filter-group + .filter-group { margin-left: 0; padding-left: 0; border-left: 0; width: 100%; margin-top: 0.4rem; }
+  }
+
+  body.page-locked .topbar,
+  body.page-locked .feed { visibility: hidden; }
+  body.page-locked::before {
+    content: 'Checking sign-in…';
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--li-bg, #f4f2ee);
+    color: var(--li-text-muted, #5e6b78);
+    font-size: 1rem;
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    z-index: 9999;
+  }
+  .topbar-auth {
+    display: flex; align-items: center; justify-content: flex-end;
+    gap: 0.6rem;
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 0.4rem;
+  }
+  .topbar-auth .email { color: #fff; font-weight: 500; }
+  .topbar-auth a { color: rgba(255,255,255,0.85); text-decoration: underline; }
+  .topbar-auth a:hover { color: #fff; }
+
+</style>
+
+<script type="module">
+  import { initializeApp, getApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+
+  const FIREBASE_CONFIG = {
+    apiKey:            "AIzaSyAC3f0IH9-s7XU9fTE3jbk7Bhfn20uTIdY",
+    authDomain:        "glinda-website.firebaseapp.com",
+    databaseURL:       "https://glinda-website-default-rtdb.firebaseio.com",
+    projectId:         "glinda-website",
+    storageBucket:     "glinda-website.firebasestorage.app",
+    messagingSenderId: "244199801855",
+    appId:             "1:244199801855:web:82838197aab888d894ddca",
+    measurementId:     "G-R8YJ0J0FC2"
+  };
+  const ALLOWLIST = [
+    'jordan@glindagroup.com',
+    'laura@glindagroup.com',
+    'milos.milosavljevic@glindagroup.com',
+    'milos.milosavljevic@nsc.agency',
+    'team@2-human.com'
+  ];
+
+  const app  = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
+  const auth = getAuth(app);
+
+  onAuthStateChanged(auth, (user) => {
+    const email = ((user && user.email) || '').toLowerCase();
+    if (!user || !ALLOWLIST.includes(email)) {
+      window.location.replace('../../login/');
+      return;
+    }
+    document.body.classList.remove('page-locked');
+    const el = document.getElementById('signed-in-email');
+    if (el) el.textContent = email;
+  });
+</script>
+<script src="../../auth-gate.js" defer></script>
+
+</head>
+<body class="page-locked">
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="topbar-auth">
+      Signed in as <span class="email" id="signed-in-email">…</span>
+      · <a href="../../logout/">Logout</a>
+    </div>
+    <h1>Glinda LinkedIn campaign — team preview</h1>
+    <p>21 posts across 7 landing pages × 3 voices. Filter to compare. Click the floating Comments button (bottom-right) to leave feedback on any post.</p>
+    <div class="filters">
+      <div class="filter-group">
+        <span class="label">Author</span>
+        <button class="chip active" data-filter="author" data-value="all">All</button>
+        <button class="chip" data-filter="author" data-value="jb">Jordan</button>
+        <button class="chip" data-filter="author" data-value="lm">Laura</button>
+        <button class="chip" data-filter="author" data-value="gg">Glinda Group</button>
+      </div>
+      <div class="filter-group">
+        <span class="label">Landing page</span>
+        <button class="chip active" data-filter="lp" data-value="all">All</button>
+        <button class="chip" data-filter="lp" data-value="goals-trial">Goals</button>
+        <button class="chip" data-filter="lp" data-value="decisions-jadm">Decisions</button>
+        <button class="chip" data-filter="lp" data-value="underperformance-superfriends">Underperf.</button>
+        <button class="chip" data-filter="lp" data-value="culture-cultureclub">Culture</button>
+        <button class="chip" data-filter="lp" data-value="silos-collaborationnation">Silos</button>
+        <button class="chip" data-filter="lp" data-value="leadership-totmty">Leaders</button>
+        <button class="chip" data-filter="lp" data-value="attitudes-safetydance">Attitudes</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="feed" id="feed"></main>
+
+<script>
+  // ============================================================
+  // DATA
+  // ============================================================
+  const AUTHORS = {
+    jb: {
+      name: 'Jordan Scott Birnbaum',
+      verified: false,
+      headline: "Co-Founder, Thinker / Doer at The Glinda Group · Behavioral Science Writer · Glinda's Edge",
+      avatar: '../../files/jordan-birnbaum.png',
+      isCompany: false,
+      time: '2d',
+    },
+    lm: {
+      name: 'Laura Martin, MBA',
+      verified: false,
+      headline: 'Co-Founder, CEO at The Glinda Group · Behavioral science meets culture-building',
+      avatar: '../../files/laura-martin.png',
+      isCompany: false,
+      time: '2d',
+    },
+    gg: {
+      name: 'The Glinda Group',
+      verified: true,
+      headline: 'Behavioral-science consultancy · Science + Whimsy',
+      avatar: '../../files/logo.svg',
+      isCompany: true,
+      time: '2d',
+    },
+  };
+
+  const LPS = {
+    'goals-trial': {
+      label: "Goals don't work",
+      ogTitle: "Why don't your goals get you the outcomes you seek? · The Glinda Group",
+      ogDesc: "They're aimed at outcomes, not behavior. We rebuild them as testable behavioral hypotheses, and they hold.",
+      ogImage: 'https://engage.glindagroup.com/files/og-goals-trial.png',
+      urlBase: 'https://engage.glindagroup.com/goals-trial/',
+    },
+    'decisions-jadm': {
+      label: 'Bad decisions',
+      ogTitle: 'Why does your team keep struggling with decisions? · The Glinda Group',
+      ogDesc: "Because individual self-interest beats org-interest when no one's named the trade-off. We name it, in an hour.",
+      ogImage: 'https://engage.glindagroup.com/files/og-decisions-jadm.png',
+      urlBase: 'https://engage.glindagroup.com/decisions-jadm/',
+    },
+    'underperformance-superfriends': {
+      label: 'Underperformance',
+      ogTitle: 'Why do half your people seem checked out? · The Glinda Group',
+      ogDesc: "Without status, people feel no purpose. They're not part of anything. We know how to make everyone count.",
+      ogImage: 'https://engage.glindagroup.com/files/og-underperformance.png',
+      urlBase: 'https://engage.glindagroup.com/underperformance-superfriends/',
+    },
+    'culture-cultureclub': {
+      label: 'Culture vs reality',
+      ogTitle: "Why doesn't your culture deck reflect how your organization actually feels? · The Glinda Group",
+      ogDesc: "When the evidence contradicts the espoused values of culture, it often signals an org that doesn't know, or hasn't accepted, itself.",
+      ogImage: 'https://engage.glindagroup.com/files/og-culture.png',
+      urlBase: 'https://engage.glindagroup.com/culture-cultureclub/',
+    },
+    'silos-collaborationnation': {
+      label: 'Silos',
+      ogTitle: 'Why do your silos keep getting taller? · The Glinda Group',
+      ogDesc: 'Smaller teams create stronger identities. If you want people to collaborate across the org, you have to let them solve problems together.',
+      ogImage: 'https://engage.glindagroup.com/files/og-silos.png',
+      urlBase: 'https://engage.glindagroup.com/silos-collaborationnation/',
+    },
+    'leadership-totmty': {
+      label: 'Leaders who don\'t lead',
+      ogTitle: 'Are your leaders too busy to lead? Do they even know how? · The Glinda Group',
+      ogDesc: 'Most people become leaders because they are good at execution. So they keep executing, and never start leading.',
+      ogImage: 'https://engage.glindagroup.com/files/og-leadership.png',
+      urlBase: 'https://engage.glindagroup.com/leadership-totmty/',
+    },
+    'attitudes-safetydance': {
+      label: 'Cynical attitudes',
+      ogTitle: 'Why do attitudes of cynicism get in the way of team effort, cohesion and performance? · The Glinda Group',
+      ogDesc: 'Attitudes are values times beliefs, and values are permanent. To change an attitude, you have to change a belief.',
+      ogImage: 'https://engage.glindagroup.com/files/og-attitudes.png',
+      urlBase: 'https://engage.glindagroup.com/attitudes-safetydance/',
+    },
+  };
+
+  const POSTS = [
+    // 1. goals-trial
+    {
+      lp: 'goals-trial', author: 'jb',
+      hook: 'SMART goals were a SMART idea in 1981.',
+      body: [
+        "Then the world started changing faster than your quarterly plan can update. The team writes goals in Q1 that everyone forgets by Q2 — not because they're lazy, but because the goal stopped being relevant in March and nobody wanted to admit it.",
+        "A static guess isn't a strategy. It's a souvenir.",
+        "We replace goal-setting with goal-experimenting. The method is called T.R.I.A.L. (Try to Remember It's About Learning). Because the world changes too fast for goal strategies from the 1950s.",
+      ],
+    },
+    {
+      lp: 'goals-trial', author: 'lm',
+      hook: "A goal isn't a plan. It's a hypothesis.",
+      body: [
+        'When teams treat goals as fixed targets, they optimize for measurability instead of learning. Performance follows the metric, not the intent.',
+        'We rebuild goal-setting as an iterative experiment — a behavioral framework called T.R.I.A.L. By the end of the workshop, your team can run their own cycles: define the hypothesis, design the test, read the signal, adjust.',
+        'Goals become guesses you keep updating.',
+      ],
+    },
+    {
+      lp: 'goals-trial', author: 'gg',
+      hook: "Why don't your goals get you the outcomes you seek?",
+      body: [
+        "Because they're static guesses in a moving world. SMART optimizes for measurability, not the behaviors that produce the outcome. The goal becomes a souvenir; the work proceeds without it.",
+        "We turn goal-setting into goal-experimenting. The T.R.I.A.L. Method (Try to Remember It's About Learning) gives your team a behavioral framework for iteration — not an annual ritual.",
+        'Science + Whimsy applied to the most overlooked part of strategy: the part that actually moves.',
+      ],
+    },
+
+    // 2. decisions-jadm
+    {
+      lp: 'decisions-jadm', author: 'jb',
+      hook: 'Every decision in your org is a fight between Maslow and Kahneman.',
+      body: [
+        'Maslow says: take care of yourself first. Kahneman says: your brain will do it without telling you.',
+        'This is why your strategy meetings feel like alignment and your retros feel like betrayal. Each person decided what was best — for them. The org-interest case never got pleaded.',
+        'We name the trade-off out loud, in a single morning. The workshop is JA(d)M Session. (Just Another Day of Magic.) Most clients leave with the four decisions they\'d been arguing about, decided.',
+      ],
+    },
+    {
+      lp: 'decisions-jadm', author: 'lm',
+      hook: "Most bad decisions aren't bad. They're misaligned.",
+      body: [
+        'The team optimizes for individual incentive; the org needs collective judgment. Nobody is wrong; everyone is partially wrong together.',
+        'Naming this gap is the first move. We do it in a single facilitated session — JADM — and watch the strategic questions you\'ve been circling resolve in real time.',
+        'The room changes. The decision sticks.',
+      ],
+    },
+    {
+      lp: 'decisions-jadm', author: 'gg',
+      hook: 'Why does your team keep struggling with decisions?',
+      body: [
+        "Because individual self-interest beats org-interest when no one's named the trade-off. We name it, in an hour.",
+        'JADM (Just Another Day of Magic) is our session for collective decisions that actually hold. Four resolutions, in real time, with the strategic alignment baked in.',
+        'Behavioral science + facilitation method = decisions that stick beyond the meeting.',
+      ],
+    },
+
+    // 3. underperformance-superfriends
+    {
+      lp: 'underperformance-superfriends', author: 'jb',
+      hook: 'Not everyone can have a cool job. But everyone can be a cool teammate.',
+      body: [
+        'When you assume "underperformance" is a motivation problem, you\'re misdiagnosing. It\'s a status problem.',
+        "Some people have visible roles; others don't. The ones without status stop trying — not because they're lazy, but because they don't believe their effort matters.",
+        'We rewire it in a single workshop called Super Friends. (Yes, like the cartoon. With archetypes.) By the end, every teammate has new status. And the team gets a lot closer to The Super Friends.',
+      ],
+    },
+    {
+      lp: 'underperformance-superfriends', author: 'lm',
+      hook: 'Recognition is awareness. Status is belonging.',
+      body: [
+        'We confuse them at work all the time. Recognition says "you closed the deal." Status says "you\'re our closer." One is a transaction. The other is identity.',
+        'When status is unevenly distributed, the people without it disengage — not from laziness, from absence. We redistribute it deliberately. The workshop is Super Friends; every teammate leaves with a defined role in the team\'s mythology.',
+        'Connection leads to achievement. Not the other way around.',
+      ],
+    },
+    {
+      lp: 'underperformance-superfriends', author: 'gg',
+      hook: 'Why do half your people seem checked out?',
+      body: [
+        "They aren't disengaged. They're invisible.",
+        'When status concentrates in three people, the other seven stop trying — not from laziness, from absence. We redistribute it.',
+        'Super Friends is our workshop for making everyone a teammate. Archetypes, intentions, the Wheel of Fun Stories. By the end of an hour, every person on the team has new status.',
+        'Connection leads to achievement, not the other way around.',
+      ],
+    },
+
+    // 4. culture-cultureclub
+    {
+      lp: 'culture-cultureclub', author: 'jb',
+      hook: 'Your culture deck says one thing. Your artifacts say another.',
+      body: [
+        'The artifacts win. Always.',
+        'Meetings, comp, who gets surfaced in all-hands, what behavior the top performers can get away with — those are your real culture. The deck is what you hoped culture would be.',
+        "Either you didn't notice the gap, or you did and chose not to address it. Both are fixable. We help your org notice — and decide — in a single facilitated workshop: The Culture Club.",
+      ],
+    },
+    {
+      lp: 'culture-cultureclub', author: 'lm',
+      hook: "Culture isn't what you say. It's what the system rewards.",
+      body: [
+        'When the values on the deck contradict the comp structure, the deck loses. Every time.',
+        'Our work is in the artifacts: meetings, decisions, who gets surfaced, what behaviors are tolerated from the top performers. Once you see the gap, you can choose — change the value, or change the system that\'s producing the gap.',
+        'The workshop is The Culture Club. Most leaders leave with the gap mapped, named, and a clear move.',
+      ],
+    },
+    {
+      lp: 'culture-cultureclub', author: 'gg',
+      hook: "Why doesn't your culture deck match how your org actually feels?",
+      body: [
+        "Because the artifacts — meetings, comp, decisions — say something the values don't.",
+        "We get the whole org to name what's espoused, what's assumed, and what's produced. Then either the value updates to reflect reality, or the artifact does. Both are sustainable. Both can't stay.",
+        'The Culture Club: behavioral science meets organizational design. Science + Whimsy applied to the gap between the deck and the day.',
+      ],
+    },
+
+    // 5. silos-collaborationnation
+    {
+      lp: 'silos-collaborationnation', author: 'jb',
+      hook: "Strong teams build strong silos. That's not a bug.",
+      body: [
+        "It's how identity formation works. The team you're closest to becomes \"us\"; everyone else becomes \"them.\" Strong identity is the cost of high-performing teams. You can't have one without the other.",
+        "The fix isn't \"more meetings.\" It's shared problems with stakes.",
+        'Collaboration Nation is action learning: cross-functional teams meet weekly to solve real problems, present to senior execs. The solutions are great. The friendships across the org are better.',
+      ],
+    },
+    {
+      lp: 'silos-collaborationnation', author: 'lm',
+      hook: "You can't expect people to connect. They need a problem to solve together.",
+      body: [
+        'Identity follows engagement, not announcement. The team you spend time with becomes "us"; everyone else stays an abstraction.',
+        'We design the engagement that builds cross-team identity. Cross-functional teams, real problems, weekly meetings, exec presentations.',
+        'Some changes are epoch. This is one of them.',
+      ],
+    },
+    {
+      lp: 'silos-collaborationnation', author: 'gg',
+      hook: 'Why do your silos keep getting taller?',
+      body: [
+        "Smaller teams create stronger identities. Strong identities resist cross-team work. That's the trade-off, and most orgs don't name it.",
+        'We design engagement that builds cross-team identity deliberately: temporary cross-functional teams, weekly cycles, real problems, exec presentations.',
+        'The solutions are great. The friendships across the org are better. Collaboration Nation, applied.',
+      ],
+    },
+
+    // 6. leadership-totmty
+    {
+      lp: 'leadership-totmty', author: 'jb',
+      hook: 'People get promoted because they execute. Then they keep executing.',
+      body: [
+        "This is the doer-leader trap. You hire someone who's good at the work, then you ask them to lead the people who do the work. They never stop doing.",
+        "The team starves. The leader burns out. Engagement scores drop. Change efforts fail. Everyone wonders what's wrong.",
+        "What's wrong is the leader doesn't know what leadership is yet. We teach it, in a 52-week nudge program: weekly emails + monthly 29-minute talks. Top of the Mind to You!",
+      ],
+    },
+    {
+      lp: 'leadership-totmty', author: 'lm',
+      hook: 'The primary job of a leader is to get performance out of others — not out of themselves.',
+      body: [
+        "Most leaders don't recognize this distinction. They were promoted because they could execute, so they keep executing.",
+        "We don't fix leadership in a workshop. We fix it across a year, in 29-minute talks and weekly emails — a discipline that compounds. The program is Top of the Mind to You!",
+        'First we get your managers to care about being better. Then we teach them how.',
+      ],
+    },
+    {
+      lp: 'leadership-totmty', author: 'gg',
+      hook: 'Are your leaders too busy to lead? Do they even know how?',
+      body: [
+        "Most people become leaders because they're good at execution. So they keep executing — and never start leading. The team starves. The numbers slip.",
+        "We don't run a workshop for this. We run a year-long nudge program: monthly 29-minute talks + weekly punchy emails. Top of the Mind to You!",
+        'By month three, your managers care about being better. By month twelve, they know how. Compounding discipline + behavioral science.',
+      ],
+    },
+
+    // 7. attitudes-safetydance
+    {
+      lp: 'attitudes-safetydance', author: 'jb',
+      hook: 'Attitudes are values times beliefs. Values are permanent. You do the math.',
+      body: [
+        "The work isn't about changing who someone is. It's about updating what they believe.",
+        "Sometimes the belief is wrong, and the leader has to change the belief. Sometimes the belief is right, and the leader has to change the reality the belief reflects. Either way: you can't argue someone out of an attitude. You have to surface the belief.",
+        'We do it anonymously, in real-time, in a workshop called The Safety Dance.',
+      ],
+    },
+    {
+      lp: 'attitudes-safetydance', author: 'lm',
+      hook: "You can't change someone's values. You can change a belief.",
+      body: [
+        "A cynical attitude isn't a personality flaw. It's a belief that's grown too big to ignore.",
+        'Sometimes the belief is wrong, and we update it. Sometimes the belief is right, and we change the reality reflecting it. Either way the work is in surfacing the belief — out loud, anonymously.',
+        "The workshop is The Safety Dance. The team's beliefs get named. Then either the belief or the world gets updated.",
+      ],
+    },
+    {
+      lp: 'attitudes-safetydance', author: 'gg',
+      hook: 'Why do attitudes of cynicism get in the way of team effort, cohesion and performance?',
+      body: [
+        "Because attitudes are values times beliefs — and values are permanent. The lever isn't the value. It's the belief.",
+        'We surface the beliefs that have outlived their usefulness, anonymously, in real-time. Then either the belief gets updated, or the reality the belief reflects does.',
+        'The workshop is called The Safety Dance. Because once you can name the belief, the team can dance with it instead of around it.',
+      ],
+    },
+  ];
+
+  // ============================================================
+  // RENDER
+  // ============================================================
+
+  const ICONS = {
+    like:    '<svg viewBox="0 0 24 24"><path d="M19.46 11l-3.91-3.91a7 7 0 01-1.69-2.74l-.49-1.47A2.76 2.76 0 0010.76 1 2.75 2.75 0 008 3.74v1.12a9.19 9.19 0 00.46 2.85L8.89 9H4.12a2.12 2.12 0 00-2 2.5l1.34 7a2.12 2.12 0 002 1.5h11.10a4.31 4.31 0 003.21-1.43l1.39-1.39A2.12 2.12 0 0019.46 11z"/></svg>',
+    comment: '<svg viewBox="0 0 24 24"><path d="M7 9h10v1H7zm0 4h7v-1H7zm16-2a6.78 6.78 0 01-2.84 5.61L12 22v-4H8a7 7 0 01-7-7V8a7 7 0 017-7h8a7 7 0 017 7zM21 8a5 5 0 00-5-5H8a5 5 0 00-5 5v3a5 5 0 005 5h6v2.31L19 15a4.79 4.79 0 002-4z"/></svg>',
+    repost:  '<svg viewBox="0 0 24 24"><path d="M14 15v3h6v-2h-4v-1h-2zM4 15h2v3H4v-3zm8-7v3h-2V8H4V6h6V5l2 1.5L10 8h2v0zm6 4v2H4v-2h14z"/></svg>',
+    send:    '<svg viewBox="0 0 24 24"><path d="M21 3L2 9.5l8 2.5 2.5 8L21 3z"/></svg>',
+  };
+
+  function buildUrl(lp, author) {
+    const base = LPS[lp].urlBase;
+    return base + '?utm_source=linkedin&utm_medium=post&utm_campaign=engage-glinda&utm_content=' + author;
+  }
+
+  function renderCard(post) {
+    const a = AUTHORS[post.author];
+    const l = LPS[post.lp];
+    const url = buildUrl(post.lp, post.author);
+    const hostname = 'engage.glindagroup.com';
+
+    const card = document.createElement('article');
+    card.className = 'post-card';
+    card.dataset.author = post.author;
+    card.dataset.lp = post.lp;
+
+    const avatarHtml = a.isCompany
+      ? `<div class="avatar company"><img src="${a.avatar}" alt=""></div>`
+      : `<div class="avatar"><img src="${a.avatar}" alt="${a.name}"></div>`;
+
+    const bodyHtml = post.body.map(p => `<p>${escapeHtml(p)}</p>`).join('');
+
+    // Realistic-looking engagement numbers
+    const reactions = randomBetween(28, 187);
+    const comments  = randomBetween(3, 24);
+    const reposts   = randomBetween(0, 9);
+
+    card.innerHTML = `
+      <div class="post-head">
+        ${avatarHtml}
+        <div class="head-text">
+          <div class="head-name">
+            ${escapeHtml(a.name)}
+            ${a.verified ? '<span class="badge" title="Verified company">✓</span>' : ''}
+          </div>
+          <div class="head-headline">${escapeHtml(a.headline)}</div>
+          <div class="head-time">${a.time} · 🌐</div>
+        </div>
+      </div>
+
+      <div class="post-body">
+        <span class="hook">${escapeHtml(post.hook)}</span>
+        ${bodyHtml}
+      </div>
+
+      <a class="link-preview" href="${url}" target="_blank" rel="noopener">
+        <div class="lp-image" style="background-image:url('${l.ogImage}')"></div>
+        <div class="lp-meta">
+          <div class="lp-title">${escapeHtml(l.ogTitle)}</div>
+          <div class="lp-desc">${escapeHtml(l.ogDesc)}</div>
+          <div class="lp-url">${hostname}</div>
+        </div>
+      </a>
+
+      <div class="post-stats">
+        <div class="reactions">
+          <span class="reaction-dots">
+            <span class="dot r-like"></span>
+            <span class="dot r-celebrate"></span>
+            <span class="dot r-insight"></span>
+          </span>
+          <span>${reactions}</span>
+        </div>
+        <div>${comments} comments · ${reposts} reposts</div>
+      </div>
+
+      <div class="post-actions">
+        <div class="post-action">${ICONS.like} Like</div>
+        <div class="post-action">${ICONS.comment} Comment</div>
+        <div class="post-action">${ICONS.repost} Repost</div>
+        <div class="post-action">${ICONS.send} Send</div>
+      </div>
+    `;
+    return card;
+  }
+
+  function escapeHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function randomBetween(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function render() {
+    const feed = document.getElementById('feed');
+    feed.innerHTML = '';
+
+    // Group by LP for dividers, but show all
+    const lps = Object.keys(LPS);
+    for (const lp of lps) {
+      const divider = document.createElement('div');
+      divider.className = 'lp-divider';
+      divider.dataset.lp = lp;
+      divider.textContent = LPS[lp].label + ' — /' + lp + '/';
+      feed.appendChild(divider);
+
+      const lpPosts = POSTS.filter(p => p.lp === lp);
+      for (const post of lpPosts) {
+        feed.appendChild(renderCard(post));
+      }
+    }
+  }
+
+  function applyFilters() {
+    const author = document.querySelector('.chip.active[data-filter="author"]').dataset.value;
+    const lp = document.querySelector('.chip.active[data-filter="lp"]').dataset.value;
+
+    const cards = document.querySelectorAll('.post-card');
+    cards.forEach(c => {
+      const matchAuthor = (author === 'all' || c.dataset.author === author);
+      const matchLp     = (lp === 'all' || c.dataset.lp === lp);
+      c.classList.toggle('hidden', !(matchAuthor && matchLp));
+    });
+
+    // Hide LP dividers when no posts for that LP remain visible
+    const dividers = document.querySelectorAll('.lp-divider');
+    dividers.forEach(d => {
+      const dlp = d.dataset.lp;
+      if (lp !== 'all' && lp !== dlp) {
+        d.classList.add('hidden');
+        return;
+      }
+      d.classList.remove('hidden');
+    });
+  }
+
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const group = chip.dataset.filter;
+      document.querySelectorAll(`.chip[data-filter="${group}"]`).forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      applyFilters();
+    });
+  });
+
+  render();
+</script>
+
+</body>
+</html>
