@@ -344,9 +344,31 @@
   // keyboard shortcut elsewhere on the page).
   window.GlindaBookModal = { open: open, close: close };
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', wireButtons);
-  } else {
+  // Auto-open on ?openbookcall=1 — used by the redirect from the retired
+  // /book-a-call/ standalone page so old bookmarks land at /?openbookcall=1
+  // and immediately surface the modal.
+  function maybeAutoOpen() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('openbookcall') === '1') {
+        // Strip the param from the URL so a refresh doesn't re-open.
+        params.delete('openbookcall');
+        var qs = params.toString();
+        var clean = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+        try { window.history.replaceState(null, '', clean); } catch (e) {}
+        open();
+      }
+    } catch (e) {}
+  }
+
+  function boot() {
     wireButtons();
+    maybeAutoOpen();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
   }
 })();
