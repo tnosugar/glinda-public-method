@@ -43,17 +43,19 @@
       --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { width: 100%; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
     body {
       font-family: var(--font-body);
       line-height: 1.5;
       color: var(--tgg-ink);
       background: #fff;
       -webkit-font-smoothing: antialiased;
-      /* min-height (not height) so the body grows when the calendar embed
-         needs more room than the viewport. Page scrolls vertically only
-         if Calendly's content requires it. */
-      min-height: 100dvh;
+      /* dvh so iOS address-bar collapse doesn't break the layout */
+      height: 100dvh;
       display: flex;
       flex-direction: column;
     }
@@ -93,47 +95,34 @@
     }
     .modal-close svg { width: 20px; height: 20px; fill: currentColor; }
 
-    /* ---------- Hero (compact, single screen) ---------- */
-    .modal-hero {
+    /* ---------- Intro row (body text, single line where possible) ---------- */
+    .modal-intro {
       flex: 0 0 auto;
+      padding: 0.85rem 1.5rem;
       text-align: center;
-      padding: 1.15rem 1.25rem 0.85rem;
-    }
-    .modal-hero h1 {
-      font-family: var(--font-display);
-      font-size: clamp(1.5rem, 3.2vw, 2.1rem);
-      font-weight: 700;
-      line-height: 1.1;
-      color: var(--tgg-purple);
-      letter-spacing: -0.01em;
-      margin-bottom: 0.35rem;
-    }
-    .modal-hero p.sub {
       font-size: 0.95rem;
-      max-width: 600px;
-      margin: 0 auto;
+      line-height: 1.5;
       color: var(--tgg-ink);
-      line-height: 1.45;
+      border-bottom: 1px solid var(--tgg-hairline);
+    }
+    .modal-intro strong {
+      color: var(--tgg-purple);
+      font-weight: 600;
     }
 
     /* ---------- Calendly section ----------
-       flex: 1 grows to fill the viewport when there's room.
-       min-height ensures Calendly always has enough vertical space to
-       render its tallest internal view (the booking form after picking
-       a time) without internal scroll. If viewport is shorter than this
-       min-height + header + hero, the page scrolls vertically — preferred
-       over Calendly scrolling internally on its date picker or time list. */
+       Grows to fill all remaining viewport space after header + intro. */
     .modal-calendar {
       flex: 1 1 auto;
-      min-height: 920px;
-      padding: 0.5rem 1rem 1rem;
+      min-height: 0;
+      padding: 0.5rem 1rem 0.75rem;
       display: flex;
+      overflow: hidden;
     }
     .calendly-inline-widget {
       width: 100%;
       min-width: 320px;
       flex: 1 1 auto;
-      min-height: 900px;
       border-radius: 8px;
       overflow: hidden;
     }
@@ -149,30 +138,15 @@
       }
       .modal-brand img { height: 30px; }
       .modal-close { width: 32px; height: 32px; }
-      .modal-hero {
-        padding: 0.7rem 0.85rem 0.5rem;
-      }
-      .modal-hero p.sub {
-        font-size: 0.9rem;
-        max-width: none;
+      .modal-intro {
+        padding: 0.6rem 0.85rem;
+        font-size: 0.88rem;
+        line-height: 1.4;
       }
       .modal-calendar {
         padding: 0.35rem 0.5rem;
         padding-bottom: max(0.35rem, env(safe-area-inset-bottom));
-        /* Mobile: Calendly stacks date picker over time slots over form
-           which needs more vertical space than the side-by-side desktop
-           layout. */
-        min-height: 1180px;
       }
-      .calendly-inline-widget {
-        min-height: 1160px;
-      }
-    }
-
-    /* Very small viewports — hide the sub so Calendly gets a full screen */
-    @media (max-height: 700px) {
-      .modal-hero p.sub { display: none; }
-      .modal-hero { padding-bottom: 0.4rem; }
     }
   </style>
 </head>
@@ -194,10 +168,9 @@
     </button>
   </header>
 
-  <section class="modal-hero" role="dialog" aria-labelledby="modal-title">
-    <h1 id="modal-title">Tell us where it hurts.</h1>
-    <p class="sub">30 minutes with Jordan or Laura. Bring one specific pattern your team keeps running into.</p>
-  </section>
+  <p class="modal-intro">
+    <strong>Tell us where it hurts:</strong> 30 minutes with Jordan or Laura. Bring one specific pattern your team keeps running into.
+  </p>
 
   <section class="modal-calendar" id="schedule">
     <div
