@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Book a call · The Glinda Group</title>
   <meta name="description" content="30 minutes with Jordan or Laura. Bring one specific pattern your team keeps running into. We'll show you what's underneath, and what an intervention would look like.">
-  <!-- Open Graph + Twitter Card -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://engage.glindagroup.com/book-a-call/">
   <meta property="og:title" content="Book a call · The Glinda Group">
@@ -26,12 +25,9 @@
   <link rel="icon" type="image/png" sizes="300x300" href="../files/favicon-300.png">
   <link rel="icon" type="image/png" sizes="150x150" href="../files/favicon-150.png">
 
-  <!-- auth-gate.js checks Firebase Auth state on load. Only allow-listed
-       team accounts (per public/method/AUTH_SETUP.md) get the review-widget
-       scripts dynamically injected. Public visitors see no review-widget
-       references in the page source. -->
+  <!-- auth-gate.js conditionally injects the review-widget for allow-listed
+       team members; public visitors see no widget references in source. -->
   <script src="../auth-gate.js" defer></script>
-  <script src="../sidepane.js" defer></script>
 
   <style>
     :root {
@@ -40,273 +36,172 @@
       --tgg-navy: #01055E;
       --tgg-sky: #53DEFF;
       --tgg-off-white: #F5F5F5;
-      --tgg-gray: #434343;
       --tgg-ink: #41505A;
       --tgg-ink-muted: #7E8C9F;
       --tgg-hairline: #CDDCDF;
-      --tgg-tint-sky: #E8F5FF;
       --tgg-tint-cream: #EFF5F7;
-      --fg-1: var(--tgg-ink);
-      --fg-2: var(--tgg-ink-muted);
-      --fg-brand: var(--tgg-purple);
-      --bg-1: #fff;
-      --bg-2: var(--tgg-off-white);
-      --border-1: var(--tgg-hairline);
       --font-display: 'Space Grotesk', system-ui, sans-serif;
       --font-body: 'Open Sans', system-ui, sans-serif;
       --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
-      --wrapper-max: 1080px;
-      --section-pad-y: 4rem;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
       font-family: var(--font-body);
-      font-weight: 400;
       line-height: 1.55;
       color: var(--tgg-ink);
-      background: var(--bg-1);
+      /* Backdrop — purple/navy gradient that recalls the home hero, with a
+         dark-overlay treatment so the page reads as a modal-over-something. */
+      background:
+        linear-gradient(180deg, rgba(1,5,94,0.78), rgba(1,5,94,0.92)),
+        linear-gradient(135deg, var(--tgg-purple), var(--tgg-navy));
+      background-attachment: fixed;
+      min-height: 100vh;
       -webkit-font-smoothing: antialiased;
+      padding: 2rem 1rem 3rem;
     }
 
-    a { color: var(--tgg-purple); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; transition: color 0.15s ease; }
-    a:hover { color: var(--tgg-sky); }
+    /* ---------- Modal card ---------- */
+    .modal-card {
+      max-width: 720px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow:
+        0 25px 50px -12px rgba(0, 0, 0, 0.35),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+      overflow: hidden;
+      animation: modalEnter 0.35s var(--ease-out) both;
+    }
+    @keyframes modalEnter {
+      from { opacity: 0; transform: translateY(20px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0)    scale(1);    }
+    }
 
-    .wrapper { max-width: var(--wrapper-max); margin: 0 auto; padding: 0 1.5rem; }
-
-    /* ---------- Nav (same chrome as all 8 pages) ---------- */
-    nav {
-      position: sticky; top: 0; z-index: 50;
-      background: var(--bg-1);
+    /* ---------- Modal header (brand + close) ---------- */
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 1.25rem 0.85rem;
       border-bottom: 1px solid var(--tgg-hairline);
     }
-    nav .wrapper {
-      padding: 1.5rem;
+    .modal-brand {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-    }
-    .brand { display: flex; align-items: center; text-decoration: none; }
-    .brand-logo { height: 72px; width: auto; }
-    nav .nav-actions { display: flex; gap: 0.6rem; align-items: center; }
-    nav .btn-nav {
-      padding: 0.6rem 1.1rem;
-      border-radius: 8px;
-      font-family: var(--font-display);
-      font-weight: 500;
-      font-size: 0.95rem;
       text-decoration: none;
-      transition: all 0.15s var(--ease-out);
-      white-space: nowrap;
-      border: 2px solid var(--tgg-purple);
     }
-    nav .btn-nav.primary { background: var(--tgg-purple); color: #fff; }
-    nav .btn-nav.primary:hover { background: var(--tgg-purple-darker); border-color: var(--tgg-purple-darker); }
-    nav .btn-nav.secondary { color: var(--tgg-purple); background: transparent; }
-    nav .btn-nav.secondary:hover { background: var(--tgg-purple); color: #fff; }
-    [id] { scroll-margin-top: 130px; }
-    @media (max-width: 640px) {
-      .brand-logo { height: 56px; }
-      nav .btn-nav.secondary { display: none; }
+    .modal-brand img { height: 40px; width: auto; }
+    .modal-close {
+      background: transparent;
+      border: 0;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--tgg-ink-muted);
+      transition: background 0.15s var(--ease-out), color 0.15s var(--ease-out);
+      padding: 0;
     }
+    .modal-close:hover { background: var(--tgg-tint-cream); color: var(--tgg-purple); }
+    .modal-close:focus-visible {
+      outline: 2px solid var(--tgg-purple);
+      outline-offset: 2px;
+    }
+    .modal-close svg { width: 20px; height: 20px; fill: currentColor; }
 
-    /* ---------- Hero ---------- */
-    .hero {
-      padding: 4rem 0 2rem;
+    /* ---------- Modal hero ---------- */
+    .modal-hero {
+      padding: 2.25rem 2rem 1.5rem;
       text-align: center;
     }
-    .hero h1 {
+    .modal-hero h1 {
       font-family: var(--font-display);
-      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-size: clamp(1.9rem, 4.5vw, 2.8rem);
       font-weight: 700;
-      line-height: 1.1;
+      line-height: 1.15;
       color: var(--tgg-purple);
-      margin-bottom: 1rem;
       letter-spacing: -0.01em;
+      margin-bottom: 0.85rem;
     }
-    .hero p.sub {
-      font-size: 1.2rem;
-      max-width: 640px;
+    .modal-hero p.sub {
+      font-size: 1.05rem;
+      max-width: 540px;
       margin: 0 auto;
       color: var(--tgg-ink);
       line-height: 1.5;
     }
 
-    /* ---------- What to expect ---------- */
-    .expect {
-      padding: 1rem 0 3rem;
+    /* ---------- Calendly embed inside the modal ---------- */
+    .modal-calendar {
+      padding: 0.5rem 0.75rem 1rem;
     }
-    .expect .expect-card {
-      max-width: 720px;
-      margin: 0 auto;
-      background: var(--tgg-tint-cream);
-      border: 1px solid var(--tgg-hairline);
-      border-radius: 12px;
-      padding: 1.75rem 1.75rem 1.5rem;
-    }
-    .expect h2 {
-      font-family: var(--font-display);
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--tgg-purple);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 1rem;
-    }
-    .expect ul {
-      list-style: none;
-      padding: 0;
-      display: grid;
-      gap: 0.7rem;
-    }
-    .expect li {
-      font-size: 0.98rem;
-      line-height: 1.55;
-      color: var(--tgg-ink);
-      padding-left: 1.5rem;
-      position: relative;
-    }
-    .expect li::before {
-      content: "→";
-      position: absolute;
-      left: 0;
-      top: 0;
-      color: var(--tgg-purple);
-      font-weight: 700;
-    }
-    .expect li strong { color: var(--tgg-navy); }
-
-    /* ---------- Calendly embed ---------- */
-    .calendar-section {
-      padding: 0 0 var(--section-pad-y);
-    }
-    .calendar-section .wrapper { padding: 0 0.75rem; }
     .calendly-inline-widget {
       min-width: 320px;
-      height: 720px;
+      /* Sized to accommodate Calendly's tallest internal view (the booking
+         form after picking a time) without internal scroll. */
+      height: 1050px;
       width: 100%;
       border-radius: 12px;
       overflow: hidden;
       background: var(--tgg-tint-cream);
     }
     @media (max-width: 800px) {
-      .calendly-inline-widget { height: 1100px; }
-    }
-    @media (max-width: 480px) {
-      .calendly-inline-widget { height: 1080px; }
+      .calendly-inline-widget { height: 1180px; }
     }
 
-    /* ---------- Footer (same chrome) ---------- */
-    footer {
-      background: var(--tgg-navy);
-      color: #fff;
-      padding: 2.5rem 0;
-      text-align: center;
-    }
-    footer .signature {
-      font-family: var(--font-display);
-      font-size: 1.2rem;
-      font-weight: 500;
-      margin-bottom: 0.5rem;
-    }
-    footer .tagline {
-      font-size: 0.9rem;
-      opacity: 0.85;
-      margin-bottom: 1.25rem;
-    }
-    footer .footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1.5rem;
-      margin-bottom: 1.25rem;
-      border: 0;
-    }
-    footer .footer-links a {
-      color: #fff;
-      text-decoration: none;
-      font-size: 0.9rem;
-      transition: opacity 0.15s ease;
-    }
-    footer .footer-links a:hover { opacity: 0.7; }
-    footer .footer-copyright {
-      font-size: 0.8rem;
-      opacity: 0.6;
+    /* ---------- Mobile ---------- */
+    @media (max-width: 600px) {
+      body { padding: 0.75rem 0.5rem 1.5rem; }
+      .modal-card { border-radius: 12px; }
+      .modal-header { padding: 0.85rem 1rem 0.7rem; }
+      .modal-brand img { height: 32px; }
+      .modal-hero { padding: 1.5rem 1.25rem 1rem; }
+      .modal-calendar { padding: 0.25rem 0.4rem 0.75rem; }
     }
   </style>
 </head>
-
 <body>
 
-  <!-- ===== NAV ===== -->
-  <nav>
-    <div class="wrapper">
-      <a href="../" class="brand" aria-label="Engage Glinda home">
-        <img src="../files/logo.svg" alt="The Glinda Group" class="brand-logo">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+
+    <!-- ===== Modal header: brand + close ===== -->
+    <header class="modal-header">
+      <a class="modal-brand" href="../" aria-label="Back to Glinda home">
+        <img src="../files/logo.svg" alt="The Glinda Group">
       </a>
-      <div class="nav-actions">
-        <a href="../#contact" class="btn-nav secondary" data-cta="nav-send">Send us a message</a>
-        <a href="./" class="btn-nav primary" data-cta="nav-book" aria-current="page">Book a call</a>
-      </div>
-    </div>
-  </nav>
+      <button
+        type="button"
+        class="modal-close"
+        aria-label="Close"
+        id="modal-close-btn"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18.3 5.71L12 12.01l-6.3-6.3-1.4 1.41 6.29 6.29-6.29 6.29 1.4 1.41 6.3-6.29 6.3 6.29 1.41-1.41-6.29-6.29 6.29-6.29z"></path>
+        </svg>
+      </button>
+    </header>
 
-  <!-- ===== HERO ===== -->
-  <section class="hero">
-    <div class="wrapper">
-      <h1>Tell us where it hurts.</h1>
+    <!-- ===== Hero copy ===== -->
+    <section class="modal-hero">
+      <h1 id="modal-title">Tell us where it hurts.</h1>
       <p class="sub">30 minutes with Jordan or Laura. Bring one specific pattern your team keeps running into. We'll show you what's likely underneath — and what an intervention would look like for your context.</p>
-    </div>
-  </section>
+    </section>
 
-  <!-- ===== WHAT TO EXPECT ===== -->
-  <section class="expect">
-    <div class="wrapper">
-      <div class="expect-card">
-        <h2>What to expect</h2>
-        <ul>
-          <li><strong>30 minutes, on Zoom.</strong> No deck, no pitch. We listen first.</li>
-          <li><strong>Bring one pattern.</strong> The thing your team keeps doing (or not doing) that you can't quite name. The recurring meeting outcome. The retro you've had three times. The hire who's a high performer but draining the team.</li>
-          <li><strong>You'll leave with a read.</strong> What behavioral mechanism is probably driving the pattern. Whether it's a fit for a workshop, a leadership-nudge program, or something else entirely.</li>
-          <li><strong>If we're a fit, we'll say so.</strong> If we're not, we'll tell you that too. Either way the diagnosis is yours to keep.</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== CALENDLY EMBED ===== -->
-  <section class="calendar-section" id="schedule">
-    <div class="wrapper">
+    <!-- ===== Calendly inline embed ===== -->
+    <section class="modal-calendar" id="schedule">
       <!-- Calendly inline widget begin -->
       <div
         class="calendly-inline-widget"
-        data-url="https://calendly.com/d/dzzp-tx7-qp3/see-what-s-possible-with-glinda?primary_color=8705e4&text_color=01055e&background_color=ffffff"
+        data-url="https://calendly.com/d/dzzp-tx7-qp3/see-what-s-possible-with-glinda?primary_color=8705e4&text_color=01055e&background_color=ffffff&hide_landing_page_details=1"
       ></div>
       <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
       <!-- Calendly inline widget end -->
-    </div>
-  </section>
+    </section>
 
-  <!-- ===== FOOTER ===== -->
-  <footer>
-    <div class="wrapper">
-      <div class="signature">Kindness is Cooler than Coolness.</div>
-      <div class="tagline">The Glinda Group · Behavioral science with a sense of humor.</div>
-      <nav class="footer-links" aria-label="Footer">
-        <a href="https://glindagroup.com/" target="_blank" rel="noopener">Explore Glinda →</a>
-        <a href="../content/privacy.html" class="sidepane-trigger" data-sidepane-title="Privacy Policy">Privacy Policy</a>
-        <a href="../content/terms.html" class="sidepane-trigger" data-sidepane-title="Terms of Use">Terms of Use</a>
-      </nav>
-      <div class="footer-copyright">© 2026 The Glinda Group LLC. All rights reserved.</div>
-    </div>
-  </footer>
+  </div>
 
-  <!-- ===== UTM PASSTHROUGH ===== -->
-  <!-- Forwards any utm_* params from the inbound URL (or sessionStorage,
-       set by the persistence pass on other pages) onto the Calendly
-       embed URL so we attribute bookings back to the source post / LP
-       / campaign. Booking webhooks will then carry the UTM bundle. -->
+  <!-- ===== UTM passthrough (forwards utm_* onto the Calendly embed URL) ===== -->
   <script>
     (function () {
       var UTM_KEYS = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'];
@@ -336,13 +231,11 @@
         });
       }
 
-      // URL params win over sessionStorage on this visit, but URL bundle is also persisted.
       var fromUrl     = readUtmFromUrl();
       var fromSession = readUtmFromSession();
       var bundle = Object.assign({}, fromSession, fromUrl);
       persistUtm(fromUrl);
 
-      // If we have any UTMs, append them to the Calendly embed URL.
       var widget = document.querySelector('.calendly-inline-widget');
       if (!widget) return;
       var url = widget.getAttribute('data-url');
@@ -356,6 +249,37 @@
         return encodeURIComponent(k) + '=' + encodeURIComponent(bundle[k]);
       }).join('&');
       widget.setAttribute('data-url', url + sep + extra);
+    })();
+  </script>
+
+  <!-- ===== Close-button behavior ===== -->
+  <script>
+    (function () {
+      var btn = document.getElementById('modal-close-btn');
+      if (!btn) return;
+
+      function dismiss() {
+        // Prefer history back if the user came from another site page —
+        // returns them to whatever they were reading. Otherwise fall back
+        // to the home page.
+        if (window.history.length > 1 && document.referrer &&
+            document.referrer.indexOf(window.location.host) !== -1) {
+          window.history.back();
+        } else {
+          window.location.href = '../';
+        }
+      }
+      btn.addEventListener('click', dismiss);
+
+      // Escape key also closes.
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') dismiss();
+      });
+
+      // Clicking the backdrop (outside the modal card) also closes.
+      document.body.addEventListener('click', function (e) {
+        if (e.target === document.body) dismiss();
+      });
     })();
   </script>
 
