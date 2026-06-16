@@ -376,28 +376,28 @@
       label: 'Culture vs reality',
       ogTitle: "Why doesn't your culture deck reflect how your organization actually feels? · The Glinda Group",
       ogDesc: "When the evidence contradicts the espoused values of culture, it often signals an org that doesn't know, or hasn't accepted, itself.",
-      ogImage: 'https://engage.glindagroup.com/files/og-culture.png',
+      ogImage: 'https://engage.glindagroup.com/files/og-culture.png?v=20260610',
       urlBase: 'https://engage.glindagroup.com/culture-cultureclub/',
     },
     'silos-collaborationnation': {
       label: 'Silos',
       ogTitle: 'Why do your silos keep getting taller? · The Glinda Group',
       ogDesc: 'Smaller teams create stronger identities. If you want people to collaborate across the org, you have to let them solve problems together.',
-      ogImage: 'https://engage.glindagroup.com/files/og-silos.png',
+      ogImage: 'https://engage.glindagroup.com/files/og-silos.png?v=20260610',
       urlBase: 'https://engage.glindagroup.com/silos-collaborationnation/',
     },
     'leadership-totmty': {
       label: 'Leaders who don\'t lead',
       ogTitle: 'Are your leaders too busy to lead? Do they even know how? · The Glinda Group',
       ogDesc: 'Most people become leaders because they are good at execution. So they keep executing, and never start leading.',
-      ogImage: 'https://engage.glindagroup.com/files/og-leadership.png',
+      ogImage: 'https://engage.glindagroup.com/files/og-leadership.png?v=20260610',
       urlBase: 'https://engage.glindagroup.com/leadership-totmty/',
     },
     'attitudes-safetydance': {
       label: 'Cynical attitudes',
       ogTitle: 'Why do attitudes of cynicism get in the way of team effort, cohesion and performance? · The Glinda Group',
       ogDesc: 'Attitudes are values times beliefs, and values are permanent. To change an attitude, you have to change a belief.',
-      ogImage: 'https://engage.glindagroup.com/files/og-attitudes.png',
+      ogImage: 'https://engage.glindagroup.com/files/og-attitudes.png?v=20260610',
       urlBase: 'https://engage.glindagroup.com/attitudes-safetydance/',
     },
   };
@@ -618,9 +618,23 @@
     send:    '<svg viewBox="0 0 24 24"><path d="M21 3L2 9.5l8 2.5 2.5 8L21 3z"/></svg>',
   };
 
+  // Workshop slug → utm_term
+  const WORKSHOP_TERMS = {
+    'goals-trial':                   'trial_method',
+    'decisions-jadm':                'jadm_session',
+    'underperformance-superfriends': 'super_friends',
+    'culture-cultureclub':           'culture_club',
+    'silos-collaborationnation':     'collaboration_nation',
+    'leadership-totmty':             'leadership_tax_on_me',
+    'attitudes-safetydance':         'safety_dance',
+  };
+
   function buildUrl(lp, author) {
+    // Note: utm_content=post_boost is the same across all 3 voices per LP.
+    // Author-level attribution (utm_content=jb|lm|gg) was removed when we
+    // switched to the boosted-post UTM scheme on 2026-06-10.
     const base = LPS[lp].urlBase;
-    return base + '?utm_source=linkedin&utm_medium=post&utm_campaign=engage-glinda&utm_content=' + author;
+    return base + '?utm_source=linkedin&utm_medium=social&utm_campaign=engage_glinda&utm_content=post_boost&utm_term=' + WORKSHOP_TERMS[lp];
   }
 
   function renderCard(post) {
