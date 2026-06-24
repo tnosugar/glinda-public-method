@@ -1109,8 +1109,13 @@
             return res.json();
           })
           .then(function () {
-            showStatus('success', "Thanks. We'll be in touch within one business day.");
-            form.reset();
+            // Redirect to thank-you page on successful submit. LinkedIn
+            // Insight Tag is on /thanks/ and fires automatically — that's
+            // what counts as a conversion in Campaign Manager.
+            // Carry through UTMs so attribution holds across the redirect.
+            var params = new URLSearchParams(window.location.search);
+            params.set('from', 'culture-cultureclub');
+            window.location.href = '../thanks/?' + params.toString();
           })
           .catch(function (err) {
             console.error('[lead-form] submit failed:', err);

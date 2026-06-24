@@ -1,11 +1,15 @@
-<p><em>Last updated: May 15, 2026</em></p>
+<p><em>Last updated: June 10, 2026</em></p>
 
 <p>This policy describes what The Glinda Group collects through engage.glindagroup.com, how that information is used, and your rights regarding it.</p>
 
 <h3>What we collect</h3>
 <p>When you complete the contact form on any page, we record what you submit directly: your name, email, company name (optional), company size, role, and a free-text description of the symptom you're trying to address.</p>
 <p>Each submission also carries a small set of context fields collected automatically: the page you were on when you submitted, the page that referred you, the time of submission, and any standard UTM tracking parameters present in the URL (source, medium, campaign, content, term). UTM values are persisted within your browser session so that internal navigation between symptom pages doesn't strip the original attribution.</p>
-<p>We do not currently use cookies, analytics scripts, or third-party tracking pixels on this site.</p>
+<h3>Tracking on the thank-you page</h3>
+<p>After you submit the contact form you are redirected to a confirmation page at <code>/thanks/</code>. That page (and only that page) loads the LinkedIn Insight Tag, a JavaScript tracker provided by LinkedIn Corporation. Its purpose is to let us measure whether boosted LinkedIn posts are driving qualified inquiries — without it we can't tell paid social spend from organic interest. The tag fires on page load and reports the visit to LinkedIn along with whatever identifier LinkedIn has for your session (a cookie set by linkedin.com domains; we do not see this identifier).</p>
+<p>The Insight Tag does not run on the landing pages themselves. It does not fire if you navigate the site without submitting a form. If you visit <code>/thanks/</code> directly, the tag fires; if you have JavaScript disabled, a 1×1 pixel fallback fires instead.</p>
+<p>To opt out of LinkedIn ad measurement and analytics across the web, see LinkedIn's preferences at <a href="https://www.linkedin.com/help/linkedin/answer/62931" target="_blank" rel="noopener">linkedin.com/help/linkedin/answer/62931</a>. Standard browser-level tracker blockers (uBlock Origin, Privacy Badger, Brave's shields, Safari Intelligent Tracking Prevention) also block the tag.</p>
+<p>Apart from the Insight Tag on <code>/thanks/</code>, we do not use cookies, analytics scripts, or third-party tracking pixels anywhere else on this site.</p>
 
 <h3>How we use it</h3>
 <p>Submissions are used to reply to your inquiry and to follow up on any engagement that develops. Context fields help us understand where conversations are coming from. We don't sell, rent, or share your information with third parties for their marketing.</p>
